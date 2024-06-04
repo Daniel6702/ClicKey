@@ -1,176 +1,86 @@
 import sys
-import threading
-import pyautogui
-from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QComboBox, QSpinBox, QCheckBox)
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QStackedWidget
 from PyQt5.QtCore import Qt
 
-class AutoPresser(QWidget):
+from mouse_clicker import MouseClicker
+from key_presser import KeyPresser
+from profiles import Profiles
+from scripts import Scripts
+from settings import Settings
+
+#pynput, pyautogui, pyqt5, pyautogui, sip
+
+class MainApp(QWidget):
     def __init__(self):
         super().__init__()
 
         self.initUI()
-
-        self.is_running = False
-        self.thread = None
+        self.initConnections()
 
     def initUI(self):
-        main_layout = QVBoxLayout()
-        main_layout.setAlignment(Qt.AlignTop)
+        main_layout = QHBoxLayout()
+        sidebar_layout = QVBoxLayout()
+        sidebar_layout.setAlignment(Qt.AlignTop)
 
-        settings_layout = QHBoxLayout()
-        settings_layout.setAlignment(Qt.AlignTop)
+        self.stacked_widget = QStackedWidget(self)
 
-        # Key presser section
-        key_layout = QVBoxLayout()
-        key_layout.setAlignment(Qt.AlignTop)
-        self.key_enable_checkbox = QCheckBox("Enable Key Presser")
-        key_layout.addWidget(self.key_enable_checkbox)
+        self.mouse_clicker = MouseClicker()
+        self.key_presser = KeyPresser()
+        self.profiles = Profiles()
+        self.scripts = Scripts()
+        self.settings = Settings()
 
-        self.key_input = QLineEdit(self)
-        key_layout.addWidget(QLabel("Key:"))
-        key_layout.addWidget(self.key_input)
-        
-        # Interval
-        self.key_interval_input = QSpinBox(self)
-        self.key_interval_input.setMinimum(1)
-        self.key_interval_input.setMaximum(10000)
-        self.key_interval_input.setSuffix(" ms")
-        key_layout.addWidget(QLabel("Interval between presses (ms):"))
-        key_layout.addWidget(self.key_interval_input)
+        self.stacked_widget.addWidget(self.mouse_clicker)
+        self.stacked_widget.addWidget(self.key_presser)
+        self.stacked_widget.addWidget(self.profiles)
+        self.stacked_widget.addWidget(self.scripts)
+        self.stacked_widget.addWidget(self.settings)
 
-        settings_layout.addLayout(key_layout)
+        self.buttons = [
+            ("Mouse Clicker", self.mouse_clicker),
+            ("Key Presser", self.key_presser),
+            ("Profiles", self.profiles),
+            ("Scripts", self.scripts),
+            ("Settings", self.settings)
+        ]
 
-        # Mouse presser section
-        mouse_layout = QVBoxLayout()
-        mouse_layout.setAlignment(Qt.AlignTop)
-        self.mouse_enable_checkbox = QCheckBox("Enable Mouse Presser")
-        mouse_layout.addWidget(self.mouse_enable_checkbox)
+        for i, (name, widget) in enumerate(self.buttons):
+            button = QPushButton(name, self)
+            button.clicked.connect(lambda _, w=widget: self.stacked_widget.setCurrentWidget(w))
+            sidebar_layout.addWidget(button)
 
-        self.mouse_button_combo = QComboBox(self)
-        self.mouse_button_combo.addItems(["left", "right", "middle"])
-        mouse_layout.addWidget(QLabel("Mouse Button"))
-        mouse_layout.addWidget(self.mouse_button_combo)
-
-        self.mouse_interval_input = QSpinBox(self)
-        self.mouse_interval_input.setMinimum(1)
-        self.mouse_interval_input.setMaximum(10000)
-        self.mouse_interval_input.setSuffix(" ms")
-        mouse_layout.addWidget(QLabel("Interval between presses (ms):"))
-        mouse_layout.addWidget(self.mouse_interval_input)
-
-        # Click position options
-        self.click_position_combo = QComboBox(self)
-        self.click_position_combo.addItems(["follow mouse", "center", "coordinates"])
-        self.click_position_combo.currentIndexChanged.connect(self.update_coordinate_inputs_visibility)
-        mouse_layout.addWidget(QLabel("Click Position:"))
-        mouse_layout.addWidget(self.click_position_combo)
-
-        self.coord_x_input = QLineEdit(self)
-        self.coord_y_input = QLineEdit(self)
-        self.coord_x_label = QLabel("X Coordinate:")
-        self.coord_y_label = QLabel("Y Coordinate:")
-        mouse_layout.addWidget(self.coord_x_label)
-        mouse_layout.addWidget(self.coord_x_input)
-        mouse_layout.addWidget(self.coord_y_label)
-        mouse_layout.addWidget(self.coord_y_input)
-
-        # Click times options
-        self.click_times_combo = QComboBox(self)
-        self.click_times_combo.addItems(["Infinite", "X times"])
-        self.click_times_combo.currentIndexChanged.connect(self.update_click_times_visibility)
-        mouse_layout.addWidget(QLabel("Number of Clicks:"))
-        mouse_layout.addWidget(self.click_times_combo)
-
-        self.click_times_input = QSpinBox(self)
-        self.click_times_input.setMinimum(1)
-        self.click_times_input.setMaximum(1000000)
-        self.click_times_input.setValue(1)
-        mouse_layout.addWidget(self.click_times_input)
-
-        settings_layout.addLayout(mouse_layout)
-
-        main_layout.addLayout(settings_layout)
-
-        # Start/Stop Buttons
-        self.start_button = QPushButton("Start", self)
-        self.start_button.clicked.connect(self.start_presser)
-        main_layout.addWidget(self.start_button)
-
-        self.stop_button = QPushButton("Stop", self)
-        self.stop_button.setEnabled(False)
-        self.stop_button.clicked.connect(self.stop_presser)
-        main_layout.addWidget(self.stop_button)
+        main_layout.addLayout(sidebar_layout)
+        main_layout.addWidget(self.stacked_widget)
 
         self.setLayout(main_layout)
         self.setWindowTitle('Auto Key/Mouse Presser')
+        self.resize(500, 600)
         self.show()
 
-        self.update_coordinate_inputs_visibility()
-        self.update_click_times_visibility()
+    def initConnections(self):
+        # Connect settings signals to the appropriate slots
+        self.settings.settingsChanged.connect(self.handleSettingsChanged)
+        self.settings.emergencyStop.connect(self.handleEmergencyStop)
+        self.settings.hideApp.connect(self.handleHideApp)
 
-    def update_coordinate_inputs_visibility(self):
-        position = self.click_position_combo.currentText()
-        is_coordinates = position == "coordinates"
-        self.coord_x_label.setVisible(is_coordinates)
-        self.coord_x_input.setVisible(is_coordinates)
-        self.coord_y_label.setVisible(is_coordinates)
-        self.coord_y_input.setVisible(is_coordinates)
+    def handleSettingsChanged(self, settings):
+        print(f"Settings changed: {settings}")
+        # Update the application components with the new settings
+        self.mouse_clicker.updateSettings(settings)
+        self.key_presser.updateSettings(settings)
+        # Additional handling if needed
 
-    def update_click_times_visibility(self):
-        mode = self.click_times_combo.currentText()
-        is_x_times = mode == "X times"
-        self.click_times_input.setVisible(is_x_times)
+    def handleEmergencyStop(self):
+        print("Emergency stop triggered!")
+        # Stop any ongoing operations in the application
+        self.mouse_clicker.stop_clicker()
+        self.key_presser.stop_presser()
 
-    def start_presser(self):
-        if not self.is_running:
-            self.is_running = True
-            self.start_button.setEnabled(False)
-            self.stop_button.setEnabled(True)
-
-            if self.key_enable_checkbox.isChecked():
-                interval = self.key_interval_input.value() / 1000.0  # Convert ms to seconds
-                key = self.key_input.text()
-                self.thread = threading.Thread(target=self.press_key, args=(key, interval))
-            elif self.mouse_enable_checkbox.isChecked():
-                interval = self.mouse_interval_input.value() / 1000.0  # Convert ms to seconds
-                button = self.mouse_button_combo.currentText()
-                position = self.click_position_combo.currentText()
-                x = int(self.coord_x_input.text()) if self.coord_x_input.text().isdigit() else 0
-                y = int(self.coord_y_input.text()) if self.coord_y_input.text().isdigit() else 0
-                click_times_mode = self.click_times_combo.currentText()
-                click_times = self.click_times_input.value() if click_times_mode == "X times" else -1
-                self.thread = threading.Thread(target=self.press_mouse, args=(button, interval, position, x, y, click_times))
-
-            if self.thread:
-                self.thread.start()
-
-    def stop_presser(self):
-        if self.is_running:
-            self.is_running = False
-            self.start_button.setEnabled(True)
-            self.stop_button.setEnabled(False)
-            if self.thread is not None:
-                self.thread.join()
-
-    def press_key(self, key, interval):
-        while self.is_running:
-            pyautogui.press(key)
-            pyautogui.sleep(interval)
-
-    def press_mouse(self, button, interval, position, x, y, click_times):
-        clicks = 0
-        while self.is_running and (click_times == -1 or clicks < click_times):
-            if position == "follow mouse":
-                pyautogui.click(button=button)
-            elif position == "center":
-                screen_width, screen_height = pyautogui.size()
-                pyautogui.click(x=screen_width // 2, y=screen_height // 2, button=button)
-            elif position == "coordinates":
-                pyautogui.click(x=x, y=y, button=button)
-            pyautogui.sleep(interval)
-            clicks += 1
+    def handleHideApp(self):
+        print("Application hidden to tray.")
+        self.hide()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = AutoPresser()
+    ex = MainApp()
     sys.exit(app.exec_())
