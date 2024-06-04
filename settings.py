@@ -93,6 +93,28 @@ class Settings(QWidget):
         self.stop_key_presser_hotkey_input.setText(self.settings['stop_key_presser_hotkey'])
         self.settingsChanged.emit(self.settings)
 
+    def get_settings(self):
+        return {
+            'start_mouse_clicker_hotkey': self.start_mouse_clicker_hotkey_input.text(),
+            'stop_mouse_clicker_hotkey': self.stop_mouse_clicker_hotkey_input.text(),
+            'start_key_presser_hotkey': self.start_key_presser_hotkey_input.text(),
+            'stop_key_presser_hotkey': self.stop_key_presser_hotkey_input.text(),
+        }
+
+    def updateSettings(self, settings):
+        self.start_mouse_clicker_hotkey_input.setText(settings['start_mouse_clicker_hotkey'])
+        self.stop_mouse_clicker_hotkey_input.setText(settings['stop_mouse_clicker_hotkey'])
+        self.start_key_presser_hotkey_input.setText(settings['start_key_presser_hotkey'])
+        self.stop_key_presser_hotkey_input.setText(settings['stop_key_presser_hotkey'])
+
+    def get_default_settings(self):
+        return {
+            'start_mouse_clicker_hotkey': 'Ctrl+Shift+M',
+            'stop_mouse_clicker_hotkey': 'Ctrl+Shift+N',
+            'start_key_presser_hotkey': 'Ctrl+Shift+K',
+            'stop_key_presser_hotkey': 'Ctrl+Shift+L',
+        }
+
     def emergency_stop(self):
         self.emergencyStop.emit()
 

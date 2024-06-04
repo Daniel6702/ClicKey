@@ -1,12 +1,10 @@
 import sys
-import threading
-import pyautogui
-import random
-import winsound
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QSpinBox, QCheckBox, QPushButton, QHBoxLayout, QComboBox, QTextEdit, QApplication
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QSpinBox, QCheckBox, QPushButton, QHBoxLayout, QComboBox, QApplication
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import QShortcut
+import random
+import threading
 
 class KeyPresser(QWidget):
     def __init__(self):
@@ -104,10 +102,6 @@ class KeyPresser(QWidget):
         self.stop_button.clicked.connect(self.stop_presser)
         layout.addWidget(self.stop_button)
 
-        layout.addWidget(QLabel("Macro (Optional, format: key1,interval1;key2,interval2;...\n Example: a,1.0;b,0.5;c,2.0):"))
-        self.macro_input = QTextEdit(self)
-        layout.addWidget(self.macro_input)
-
         self.setLayout(layout)
         self.update_random_delay_visibility()
         self.update_click_times_visibility()
@@ -137,15 +131,6 @@ class KeyPresser(QWidget):
         total_seconds = hours * 3600 + minutes * 60 + seconds + milliseconds / 1000.0
         return total_seconds
 
-    def parse_macro(self, macro_text):
-        macro_steps = []
-        steps = macro_text.split(';')
-        for step in steps:
-            if step.strip():
-                key, interval = step.split(',')
-                macro_steps.append((key.strip(), float(interval.strip())))
-        return macro_steps
-
     def start_presser(self):
         if not self.is_running:
             self.is_running = True
@@ -164,9 +149,8 @@ class KeyPresser(QWidget):
                 'shift': self.shift_checkbox.isChecked()
             }
             sound_effect = self.sound_effect_checkbox.isChecked()
-            macro_text = self.macro_input.toPlainText()
-            macro_steps = self.parse_macro(macro_text) if macro_text else None
-            self.thread = threading.Thread(target=self.press_key, args=(key, interval, random_delay, min_delay, max_delay, click_times, hold_key, continuous_hold, modifiers, sound_effect, macro_steps))
+            # Removed macro_steps from arguments
+            self.thread = threading.Thread(target=self.press_key, args=(key, interval, random_delay, min_delay, max_delay, click_times, hold_key, continuous_hold, modifiers, sound_effect))
             self.thread.start()
 
     def stop_presser(self):
@@ -175,90 +159,119 @@ class KeyPresser(QWidget):
             if self.thread is not None:
                 self.thread.join()
 
-    def press_key(self, key, interval, random_delay, min_delay, max_delay, click_times, hold_key, continuous_hold, modifiers, sound_effect, macro_steps):
+    def press_key(self, key, interval, random_delay, min_delay, max_delay, click_times, hold_key, continuous_hold, modifiers, sound_effect):
         presses = 0
 
         def play_sound():
             if sound_effect:
-                winsound.Beep(1000, 100)
+                # Replaced winsound with a placeholder function as it is Windows specific
+                print("Beep")
 
         def press_with_modifiers(k):
             if modifiers['ctrl']:
-                pyautogui.keyDown('ctrl')
+                print('Ctrl down')
             if modifiers['alt']:
-                pyautogui.keyDown('alt')
+                print('Alt down')
             if modifiers['shift']:
-                pyautogui.keyDown('shift')
+                print('Shift down')
 
-            pyautogui.press(k)
+            print(f'Press {k}')
 
             if modifiers['ctrl']:
-                pyautogui.keyUp('ctrl')
+                print('Ctrl up')
             if modifiers['alt']:
-                pyautogui.keyUp('alt')
+                print('Alt up')
             if modifiers['shift']:
-                pyautogui.keyUp('shift')
+                print('Shift up')
 
             play_sound()
 
         if continuous_hold:
-            pyautogui.keyDown(key)
+            print(f'Key {key} down')
             play_sound()
             while self.is_running:
-                pyautogui.sleep(1)  # Keep the key pressed continuously
-            pyautogui.keyUp(key)
+                pass  # Keep the key pressed continuously
+            print(f'Key {key} up')
             return
 
         while self.is_running and (click_times == -1 or presses < click_times):
-            if macro_steps:
-                for macro_key, macro_interval in macro_steps:
-                    if not self.is_running:
-                        break
-                    if random_delay:
-                        interval = random.uniform(min_delay, max_delay)
-                    else:
-                        interval = macro_interval
+            if random_delay:
+                interval = random.uniform(min_delay, max_delay)
 
-                    if hold_key:
-                        if modifiers['ctrl'] or modifiers['alt'] or modifiers['shift']:
-                            press_with_modifiers(macro_key)
-                        else:
-                            pyautogui.keyDown(macro_key)
-                            pyautogui.sleep(interval)
-                            pyautogui.keyUp(macro_key)
-                            play_sound()
-                    else:
-                        if modifiers['ctrl'] or modifiers['alt'] or modifiers['shift']:
-                            press_with_modifiers(macro_key)
-                        else:
-                            pyautogui.press(macro_key)
-                            play_sound()
-                            pyautogui.sleep(interval)
-
-                    presses += 1
-                    if click_times != -1 and presses >= click_times:
-                        break
-            else:
-                if random_delay:
-                    interval = random.uniform(min_delay, max_delay)
-
-                if hold_key:
-                    if modifiers['ctrl'] or modifiers['alt'] or modifiers['shift']:
-                        press_with_modifiers(key)
-                    else:
-                        pyautogui.keyDown(key)
-                        pyautogui.sleep(interval)
-                        pyautogui.keyUp(key)
-                        play_sound()
+            if hold_key:
+                if modifiers['ctrl'] or modifiers['alt'] or modifiers['shift']:
+                    press_with_modifiers(key)
                 else:
-                    if modifiers['ctrl'] or modifiers['alt'] or modifiers['shift']:
-                        press_with_modifiers(key)
-                    else:
-                        pyautogui.press(key)
-                        play_sound()
-                        pyautogui.sleep(interval)
+                    print(f'Key {key} down')
+                    print(f'Wait {interval}')
+                    print(f'Key {key} up')
+                    play_sound()
+            else:
+                if modifiers['ctrl'] or modifiers['alt'] or modifiers['shift']:
+                    press_with_modifiers(key)
+                else:
+                    print(f'Press {key}')
+                    play_sound()
+                    print(f'Wait {interval}')
 
-                presses += 1
+            presses += 1
+
+    def get_settings(self):
+        return {
+            'key': self.key_input.text(),
+            'interval': self.get_interval(),
+            'random_delay': self.random_delay_checkbox.isChecked(),
+            'min_delay': self.min_delay_input.value(),
+            'max_delay': self.max_delay_input.value(),
+            'click_times_mode': self.click_times_combo.currentText(),
+            'click_times': self.click_times_input.value(),
+            'hold_key': self.hold_key_checkbox.isChecked(),
+            'continuous_hold': self.continuous_hold_checkbox.isChecked(),
+            'modifiers': {
+                'ctrl': self.ctrl_checkbox.isChecked(),
+                'alt': self.alt_checkbox.isChecked(),
+                'shift': self.shift_checkbox.isChecked()
+            },
+            'sound_effect': self.sound_effect_checkbox.isChecked(),
+        }
+
+    def updateSettings(self, settings):
+        self.key_input.setText(settings['key'])
+        interval = settings['interval']
+        self.hours_input.setValue(interval // 3600)
+        self.minutes_input.setValue((interval % 3600) // 60)
+        self.seconds_input.setValue(interval % 60)
+        self.milliseconds_input.setValue(int((interval * 1000) % 1000))
+        self.random_delay_checkbox.setChecked(settings['random_delay'])
+        self.min_delay_input.setValue(settings['min_delay'])
+        self.max_delay_input.setValue(settings['max_delay'])
+        self.click_times_combo.setCurrentText(settings['click_times_mode'])
+        self.click_times_input.setValue(settings['click_times'])
+        self.hold_key_checkbox.setChecked(settings['hold_key'])
+        self.continuous_hold_checkbox.setChecked(settings['continuous_hold'])
+        self.ctrl_checkbox.setChecked(settings['modifiers']['ctrl'])
+        self.alt_checkbox.setChecked(settings['modifiers']['alt'])
+        self.shift_checkbox.setChecked(settings['modifiers']['shift'])
+        self.sound_effect_checkbox.setChecked(settings['sound_effect'])
+
+    def get_default_settings(self):
+        return {
+            'key': '',
+            'interval': 1.0,
+            'random_delay': False,
+            'min_delay': 0,
+            'max_delay': 0,
+            'click_times_mode': 'Infinite (Until Stopped)',
+            'click_times': 1,
+            'hold_key': False,
+            'continuous_hold': False,
+            'modifiers': {
+                'ctrl': False,
+                'alt': False,
+                'shift': False
+            },
+            'sound_effect': False,
+        }
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -226,6 +226,64 @@ class MouseClicker(QWidget):
             else:
                 pyautogui.doubleClick(x=x, y=y, button=button)
 
+    def get_settings(self):
+        return {
+            'button': self.button_combo.currentText(),
+            'interval': self.get_interval(),
+            'position': self.position_combo.currentText(),
+            'coord_x': self.coord_x_input.text(),
+            'coord_y': self.coord_y_input.text(),
+            'rect_tl_x': self.rectangle_top_left_x.text(),
+            'rect_tl_y': self.rectangle_top_left_y.text(),
+            'rect_br_x': self.rectangle_bottom_right_x.text(),
+            'rect_br_y': self.rectangle_bottom_right_y.text(),
+            'click_times_mode': self.click_times_combo.currentText(),
+            'click_times': self.click_times_input.value(),
+            'action': self.action_combo.currentText(),
+            'random_delay': self.random_delay_checkbox.isChecked(),
+            'min_delay': self.min_delay_input.value(),
+            'max_delay': self.max_delay_input.value(),
+        }
+
+    def updateSettings(self, settings):
+        self.button_combo.setCurrentText(settings['button'])
+        self.hours_input.setValue(settings['interval'] // 3600)
+        self.minutes_input.setValue((settings['interval'] % 3600) // 60)
+        self.seconds_input.setValue(settings['interval'] % 60)
+        self.milliseconds_input.setValue(int((settings['interval'] * 1000) % 1000))
+        self.position_combo.setCurrentText(settings['position'])
+        self.coord_x_input.setText(settings['coord_x'])
+        self.coord_y_input.setText(settings['coord_y'])
+        self.rectangle_top_left_x.setText(settings['rect_tl_x'])
+        self.rectangle_top_left_y.setText(settings['rect_tl_y'])
+        self.rectangle_bottom_right_x.setText(settings['rect_br_x'])
+        self.rectangle_bottom_right_y.setText(settings['rect_br_y'])
+        self.click_times_combo.setCurrentText(settings['click_times_mode'])
+        self.click_times_input.setValue(settings['click_times'])
+        self.action_combo.setCurrentText(settings['action'])
+        self.random_delay_checkbox.setChecked(settings['random_delay'])
+        self.min_delay_input.setValue(settings['min_delay'])
+        self.max_delay_input.setValue(settings['max_delay'])
+
+    def get_default_settings(self):
+        return {
+            'button': 'left',
+            'interval': 1.0,
+            'position': 'follow mouse',
+            'coord_x': '0',
+            'coord_y': '0',
+            'rect_tl_x': '0',
+            'rect_tl_y': '0',
+            'rect_br_x': '0',
+            'rect_br_y': '0',
+            'click_times_mode': 'Infinite (Until Stopped)',
+            'click_times': 1,
+            'action': 'single click',
+            'random_delay': False,
+            'min_delay': 0,
+            'max_delay': 0,
+        }
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MouseClicker()
