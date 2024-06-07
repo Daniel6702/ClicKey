@@ -2,86 +2,153 @@ import sys
 import threading
 import pyautogui
 import random
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QSpinBox, QLineEdit, QPushButton, QHBoxLayout, QCheckBox
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QSpinBox, QLineEdit, QPushButton, QHBoxLayout, QCheckBox, QGroupBox, QStackedLayout, QRadioButton
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QApplication
+import time
 
 class MouseClicker(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.initUI()
-
         self.is_running = False
         self.thread = None
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_mouse_position)
+        self.initUI()
 
     def updateSettings(self, settings):
         self.start_hotkey = settings['start_mouse_clicker_hotkey']
         self.stop_hotkey = settings['stop_mouse_clicker_hotkey']
 
     def initUI(self):
-        layout = QVBoxLayout()
-        layout.setAlignment(Qt.AlignTop)
+        main_layout = QVBoxLayout()
+        main_layout.setAlignment(Qt.AlignTop)
+
+        self.title = QLabel("Auto Mouse Clicker")
+        self.title.setObjectName("title")
+        self.title.setAlignment(Qt.AlignCenter)
+        main_layout.addWidget(self.title)
+
+        # Group Box for Mouse Button and Action
+        button_action_group = QGroupBox("Click Action")
+        button_action_layout = QVBoxLayout()
+        button_action_group.setLayout(button_action_layout)
 
         self.button_combo = QComboBox(self)
         self.button_combo.addItems(["left", "right", "middle", "both"])
-        layout.addWidget(QLabel("Mouse Button"))
-        layout.addWidget(self.button_combo)
+        button_action_layout.addWidget(QLabel("Mouse Button"))
+        button_action_layout.addWidget(self.button_combo)
 
-        layout.addWidget(QLabel("Interval between clicks:"))
-        interval_layout = QHBoxLayout()
+        self.action_combo = QComboBox(self)
+        self.action_combo.addItems(["single click", "double click"])
+        button_action_layout.addWidget(QLabel("Action"))
+        button_action_layout.addWidget(self.action_combo)
+
+        # Group Box for Number of Clicks
+        click_times_group = QGroupBox("Number of Clicks")
+        click_times_layout = QVBoxLayout()
+        click_times_group.setLayout(click_times_layout)
+
+        self.repeat_until_stopped_radio = QRadioButton("Repeat Until Stopped")
+        self.repeat_until_stopped_radio.setChecked(True)
+        self.repeat_radio = QRadioButton("Repeat 'X' times")
+        click_times_layout.addWidget(self.repeat_until_stopped_radio)
+        click_times_layout.addWidget(self.repeat_radio)
+
+        self.click_times_input = QSpinBox(self)
+        self.click_times_input.setMinimum(1)
+        self.click_times_input.setMaximum(1000000)
+        self.click_times_input.setValue(1)
+        click_times_layout.addWidget(self.click_times_input)
+
+        temp = QHBoxLayout()
+        temp.addWidget(button_action_group)
+        temp.addWidget(click_times_group)
+        main_layout.addLayout(temp)
+
+        # Group Box for Click Interval
+        self.interval_group = QGroupBox("Interval")
+        interval_layout = QVBoxLayout()
+        self.interval_group.setLayout(interval_layout)
+
+        self.random_delay_checkbox = QCheckBox("Random interval")
+        self.random_delay_checkbox.stateChanged.connect(self.update_random_delay_visibility)
+        interval_layout.addWidget(self.random_delay_checkbox)
+
+        # Create stacked layout for fixed and random interval inputs
+        self.interval_stacked_layout = QStackedLayout()
+        self.fixed_interval_widget = QWidget()
+        self.random_interval_widget = QWidget()
+
+        # Fixed interval layout
+        fixed_interval_layout = QHBoxLayout(self.fixed_interval_widget)
         self.hours_input = QSpinBox(self)
         self.hours_input.setRange(0, 23)
+        self.hours_label = QLabel("Hours")
         self.minutes_input = QSpinBox(self)
         self.minutes_input.setRange(0, 59)
+        self.minute_label = QLabel("Minutes")
         self.seconds_input = QSpinBox(self)
         self.seconds_input.setRange(0, 59)
+        self.seconds_label = QLabel("Seconds")
         self.milliseconds_input = QSpinBox(self)
         self.milliseconds_input.setRange(0, 999)
-        interval_layout.addWidget(QLabel("Hours"))
-        interval_layout.addWidget(self.hours_input)
-        interval_layout.addWidget(QLabel("Minutes"))
-        interval_layout.addWidget(self.minutes_input)
-        interval_layout.addWidget(QLabel("Seconds"))
-        interval_layout.addWidget(self.seconds_input)
-        interval_layout.addWidget(QLabel("Milliseconds"))
-        interval_layout.addWidget(self.milliseconds_input)
-        layout.addLayout(interval_layout)
+        self.milliseconds_label = QLabel("Milliseconds")
+        fixed_interval_layout.addWidget(self.hours_label)
+        fixed_interval_layout.addWidget(self.hours_input)
+        fixed_interval_layout.addWidget(self.minute_label)
+        fixed_interval_layout.addWidget(self.minutes_input)
+        fixed_interval_layout.addWidget(self.seconds_label)
+        fixed_interval_layout.addWidget(self.seconds_input)
+        fixed_interval_layout.addWidget(self.milliseconds_label)
+        fixed_interval_layout.addWidget(self.milliseconds_input)
 
-        self.random_delay_checkbox = QCheckBox("Random delay within range")
-        self.random_delay_checkbox.stateChanged.connect(self.update_random_delay_visibility)
-        layout.addWidget(self.random_delay_checkbox)
-
-        self.random_delay_layout = QHBoxLayout()
+        # Random interval layout
+        random_interval_layout = QHBoxLayout(self.random_interval_widget)
         self.min_delay_input = QSpinBox(self)
         self.min_delay_input.setRange(0, 3600)
         self.max_delay_input = QSpinBox(self)
         self.max_delay_input.setRange(0, 3600)
-        self.random_delay_layout.addWidget(QLabel("Min delay (s)"))
-        self.random_delay_layout.addWidget(self.min_delay_input)
-        self.random_delay_layout.addWidget(QLabel("Max delay (s)"))
-        self.random_delay_layout.addWidget(self.max_delay_input)
-        layout.addLayout(self.random_delay_layout)
+        random_interval_layout.addWidget(QLabel("Min delay (s)"))
+        random_interval_layout.addWidget(self.min_delay_input)
+        random_interval_layout.addWidget(QLabel("Max delay (s)"))
+        random_interval_layout.addWidget(self.max_delay_input)
 
-        self.action_combo = QComboBox(self)
-        self.action_combo.addItems(["single click", "double click"])
-        layout.addWidget(QLabel("Action"))
-        layout.addWidget(self.action_combo)
+        self.interval_stacked_layout.addWidget(self.fixed_interval_widget)
+        self.interval_stacked_layout.addWidget(self.random_interval_widget)
+        interval_layout.addLayout(self.interval_stacked_layout)
 
+        main_layout.addWidget(self.interval_group)
+
+        # Group Box for Click Position
+        self.position_group = QGroupBox("Click Position")
+        self.position_group.setMinimumWidth(505)
+        position_layout = QVBoxLayout()
+        self.position_group.setLayout(position_layout)
+
+        temp = QHBoxLayout()
+        self.mouse_position_label = QLabel("Current Mouse Position:\n (X: 0, Y: 0)")
+        self.mouse_position_label.setStyleSheet("font-size: 12px; color: #555; margin-left: 45px;")
         self.position_combo = QComboBox(self)
         self.position_combo.addItems(["follow mouse", "center", "coordinates", "random position", "rectangle"])
         self.position_combo.currentIndexChanged.connect(self.update_coordinate_inputs_visibility)
-        layout.addWidget(QLabel("Click Position:"))
-        layout.addWidget(self.position_combo)
+        position_layout.addWidget(QLabel("Click Position:"))
+        temp.addWidget(self.position_combo)
+        temp.addWidget(self.mouse_position_label)
+
+        position_layout.addLayout(temp)
 
         self.coord_x_input = QLineEdit(self)
         self.coord_y_input = QLineEdit(self)
         self.coord_x_label = QLabel("X Coordinate:")
         self.coord_y_label = QLabel("Y Coordinate:")
-        layout.addWidget(self.coord_x_label)
-        layout.addWidget(self.coord_x_input)
-        layout.addWidget(self.coord_y_label)
-        layout.addWidget(self.coord_y_input)
+
+        position_layout.addWidget(self.coord_x_label)
+        position_layout.addWidget(self.coord_x_input)
+        position_layout.addWidget(self.coord_y_label)
+        position_layout.addWidget(self.coord_y_input)
 
         self.rectangle_top_left_x = QLineEdit(self)
         self.rectangle_top_left_y = QLineEdit(self)
@@ -91,39 +158,124 @@ class MouseClicker(QWidget):
         self.rectangle_top_left_y_label = QLabel("Top Left Y:")
         self.rectangle_bottom_right_x_label = QLabel("Bottom Right X:")
         self.rectangle_bottom_right_y_label = QLabel("Bottom Right Y:")
-        layout.addWidget(self.rectangle_top_left_x_label)
-        layout.addWidget(self.rectangle_top_left_x)
-        layout.addWidget(self.rectangle_top_left_y_label)
-        layout.addWidget(self.rectangle_top_left_y)
-        layout.addWidget(self.rectangle_bottom_right_x_label)
-        layout.addWidget(self.rectangle_bottom_right_x)
-        layout.addWidget(self.rectangle_bottom_right_y_label)
-        layout.addWidget(self.rectangle_bottom_right_y)
+        position_layout.addWidget(self.rectangle_top_left_x_label)
+        position_layout.addWidget(self.rectangle_top_left_x)
+        position_layout.addWidget(self.rectangle_top_left_y_label)
+        position_layout.addWidget(self.rectangle_top_left_y)
+        position_layout.addWidget(self.rectangle_bottom_right_x_label)
+        position_layout.addWidget(self.rectangle_bottom_right_x)
+        position_layout.addWidget(self.rectangle_bottom_right_y_label)
+        position_layout.addWidget(self.rectangle_bottom_right_y)
 
-        self.click_times_combo = QComboBox(self)
-        self.click_times_combo.addItems(["Infinite (Until Stopped)", "X times"])
-        self.click_times_combo.currentIndexChanged.connect(self.update_click_times_visibility)
-        layout.addWidget(QLabel("Number of Clicks:"))
-        layout.addWidget(self.click_times_combo)
+        main_layout.addWidget(self.position_group)
 
-        self.click_times_input = QSpinBox(self)
-        self.click_times_input.setMinimum(1)
-        self.click_times_input.setMaximum(1000000)
-        self.click_times_input.setValue(1)
-        layout.addWidget(self.click_times_input)
-
+        # Start and Stop Buttons
+        self.start_stop_layout = QHBoxLayout()
         self.start_button = QPushButton("Start")
+        self.start_button.setObjectName("startButton")
         self.start_button.clicked.connect(self.start_clicker)
-        layout.addWidget(self.start_button)
+        self.start_stop_layout.addWidget(self.start_button)
 
         self.stop_button = QPushButton("Stop")
+        self.stop_button.setObjectName("stopButton")
         self.stop_button.clicked.connect(self.stop_clicker)
-        layout.addWidget(self.stop_button)
+        self.start_stop_layout.addWidget(self.stop_button)
 
-        self.setLayout(layout)
+        main_layout.addLayout(self.start_stop_layout)
+
+        self.setLayout(main_layout)
         self.update_coordinate_inputs_visibility()
-        self.update_click_times_visibility()
         self.update_random_delay_visibility()
+
+        # Start timer to update mouse position
+        self.timer.start(100)  # Update every 100 ms
+
+        # Apply CSS Styles
+        self.applyStyles()
+
+    def applyStyles(self):
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #f9f9f9;
+                font-family: Arial, sans-serif;
+            }
+            QGroupBox {
+                border: 1px solid #d3d3d3;
+                border-radius: 5px;
+                margin-top: 10px;
+                padding: 10px;
+                font-weight: bold;
+                color: #333;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                subcontrol-position: top center;
+                padding: 0 3px;
+                background-color: #e6e6e6;
+                border-radius: 5px;
+            }
+            QLabel {
+                font-size: 14px;
+                color: #555;
+            }
+            QLabel#title {
+                font-size: 16px;
+                color: #000000;
+                font-weight: bold;
+                margin-bottom: 10px;
+                border: 1px solid #d3d3d3;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QComboBox, QSpinBox, QLineEdit {
+                padding: 5px;
+                margin: 5px 0;
+                border: 1px solid #d3d3d3;
+                border-radius: 5px;
+            }
+            QPushButton {
+                font-size: 16px;
+                color: #fff;
+                background-color: #0078d7;
+                border: none;
+                border-radius: 5px;
+                padding: 10px 20px;
+                margin: 10px 0;
+            }
+            QPushButton:hover {
+                background-color: #005bb5;
+            }
+            QPushButton:pressed {
+                background-color: #003f8a;
+            }
+            QPushButton:focus {
+                outline: none;
+            }
+            QPushButton#startButton {
+                background-color: #28a745;
+                max-width: 100%;
+            }
+            QPushButton#startButton:hover {
+                background-color: #218838;
+                max-width: 100%;
+            }
+            QPushButton#startButton:pressed {
+                background-color: #1e7e34;
+                max-width: 100%;
+            }
+            QPushButton#stopButton {
+                background-color: #dc3545;
+                max-width: 100%;
+            }
+            QPushButton#stopButton:hover {
+                background-color: #c82333;
+                max-width: 100%;
+            }
+            QPushButton#stopButton:pressed {
+                background-color: #bd2130;'
+                max-width: 100%;
+            }
+        """)
 
     def update_coordinate_inputs_visibility(self):
         position = self.position_combo.currentText()
@@ -141,16 +293,27 @@ class MouseClicker(QWidget):
         self.rectangle_bottom_right_x.setVisible(is_rectangle)
         self.rectangle_bottom_right_y_label.setVisible(is_rectangle)
         self.rectangle_bottom_right_y.setVisible(is_rectangle)
-
-    def update_click_times_visibility(self):
-        mode = self.click_times_combo.currentText()
-        is_x_times = mode == "X times"
-        self.click_times_input.setVisible(is_x_times)
+        
+        # Adjust window size after updating visibility
+        #if is_coordinates or is_rectangle:
+        self.position_group.adjustSize()
+        #self.interval_group.adjustSize()
+        #self.title.adjustSize()
+        self.adjustSize()
+        #self.setFixedSize(self.sizeHint())
 
     def update_random_delay_visibility(self):
-        is_random_delay = self.random_delay_checkbox.isChecked()
-        for i in range(self.random_delay_layout.count()):
-            self.random_delay_layout.itemAt(i).widget().setVisible(is_random_delay)
+        if self.random_delay_checkbox.isChecked():
+            self.interval_stacked_layout.setCurrentWidget(self.random_interval_widget)
+        else:
+            self.interval_stacked_layout.setCurrentWidget(self.fixed_interval_widget)
+        # Adjust window size after updating visibility
+        #self.adjustSize()
+
+    def update_mouse_position(self):
+        pos = pyautogui.position()
+        self.mouse_position_label.setText(f"Current Mouse Position:\n (X: {pos.x}, Y: {pos.y})")
+        self.adjustSize()
 
     def get_interval(self):
         hours = self.hours_input.value()
@@ -161,6 +324,7 @@ class MouseClicker(QWidget):
         return total_seconds
 
     def start_clicker(self):
+        time.sleep(2)
         if not self.is_running:
             self.is_running = True
             interval = self.get_interval()
@@ -172,7 +336,7 @@ class MouseClicker(QWidget):
             rect_tl_y = int(self.rectangle_top_left_y.text()) if self.rectangle_top_left_y.text().isdigit() else 0
             rect_br_x = int(self.rectangle_bottom_right_x.text()) if self.rectangle_bottom_right_x.text().isdigit() else 0
             rect_br_y = int(self.rectangle_bottom_right_y.text()) if self.rectangle_bottom_right_y.text().isdigit() else 0
-            click_times_mode = self.click_times_combo.currentText()
+            click_times_mode = "X times" if self.repeat_radio.isChecked() else "Infinite (Until Stopped)"
             click_times = self.click_times_input.value() if click_times_mode == "X times" else -1
             action = self.action_combo.currentText()
             random_delay = self.random_delay_checkbox.isChecked()
