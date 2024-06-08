@@ -22,10 +22,10 @@ class MainApp(QWidget):
 
     def adjustWindow(self):
         self.mouse_clicker.adjustSize()
-        #self.adjustSize()
+        self.key_presser.adjustSize()
 
     def initUI(self):
-        self.timer.start(1)
+        self.timer.start(0)
         def style_and_add_widget(widget, name):
             container = QWidget(self)
             container.setObjectName(name)
@@ -136,6 +136,12 @@ class MainApp(QWidget):
                 outline: none;
             }
         """)
+    
+    def restore_window(self):
+        self.setWindowState(self.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
+        self.show()
+        self.raise_()
+        self.activateWindow()
 
     def changePage(self, widget, button):
         self.stacked_widget.setCurrentWidget(widget)
@@ -148,6 +154,7 @@ class MainApp(QWidget):
         self.settings.settingsChanged.connect(self.handleSettingsChanged)
         self.settings.emergencyStop.connect(self.handleEmergencyStop)
         self.settings.hideApp.connect(self.handleHideApp)
+        self.settings.showApp.connect(self.restore_window)
         self.profiles.profileLoaded.connect(self.loadProfileSettings)
 
     def handleSettingsChanged(self, settings):
@@ -172,7 +179,7 @@ class MainApp(QWidget):
         self.settings.updateSettings(settings['settings'])
 
     def openHelpPage(self):
-        QDesktopServices.openUrl(QUrl("https://github.com/Daniel6702/AutoClicker"))
+        QDesktopServices.openUrl(QUrl("https://github.com/Daniel6702/ClicKey"))
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

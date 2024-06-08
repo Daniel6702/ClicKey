@@ -1,7 +1,7 @@
 import sys
 import subprocess
 import os
-from PyQt5.QtWidgets import (QWidget, QLabel, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QSpinBox, QCheckBox, QComboBox, QFileDialog, QApplication, QMessageBox)
+from PyQt5.QtWidgets import (QWidget, QLabel, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QSpinBox, QCheckBox, QComboBox, QFileDialog, QApplication, QMessageBox, QGroupBox, QRadioButton, QStackedLayout)
 from PyQt5.QtCore import Qt, pyqtSignal, QObject
 from pynput import keyboard, mouse
 import threading
@@ -20,70 +20,242 @@ class Scripts(QWidget):
         self.signal_emitter.text_signal.connect(self.update_script_editor)
     
     def initUI(self):
-        layout = QVBoxLayout()
-        layout.setAlignment(Qt.AlignTop)
+        main_layout = QVBoxLayout()
+        main_layout.setAlignment(Qt.AlignTop)
 
-        layout.addWidget(QLabel("Scripts Section"))
+        self.title = QLabel("Scripts")
+        self.title.setObjectName("title")
+        self.title.setAlignment(Qt.AlignCenter)
+        main_layout.addWidget(self.title) 
+
+        # Buttons for Script Actions
+        script_actions_group = QGroupBox("Script")
+        script_actions_layout = QVBoxLayout()
+        script_actions_group.setLayout(script_actions_layout)
 
         self.script_editor = QTextEdit()
-        layout.addWidget(self.script_editor)
+        script_actions_layout.addWidget(self.script_editor)
 
+        temp = QHBoxLayout()
         self.load_button = QPushButton("Load Script")
         self.load_button.clicked.connect(self.load_script)
-        layout.addWidget(self.load_button)
+        temp.addWidget(self.load_button)
 
         self.save_button = QPushButton("Save Script")
         self.save_button.clicked.connect(self.save_script)
-        layout.addWidget(self.save_button)
+        temp.addWidget(self.save_button)
+        script_actions_layout.addLayout(temp)
 
-        self.run_button = QPushButton("Run Script")
-        self.run_button.clicked.connect(self.run_script)
-        layout.addWidget(self.run_button)
+        main_layout.addWidget(script_actions_group)
 
-        self.stop_button = QPushButton("Stop Script")
-        self.stop_button.clicked.connect(self.stop_script)
-        layout.addWidget(self.stop_button)
-
-        self.record_button = QPushButton("Start Recording")
-        self.record_button.clicked.connect(self.toggle_recording)
-        layout.addWidget(self.record_button)
+        # Recording Options
+        recording_group = QGroupBox("Recording Options")
+        recording_layout = QVBoxLayout()
+        recording_group.setLayout(recording_layout)
 
         self.record_delay_checkbox = QCheckBox("Record Delay")
         self.record_delay_checkbox.setChecked(True)
-        layout.addWidget(self.record_delay_checkbox)
+        recording_layout.addWidget(self.record_delay_checkbox)
 
-        self.interval_layout = QHBoxLayout()
-        layout.addWidget(QLabel("Interval between actions:"))
+        temp = QHBoxLayout()
+        self.start_record_button = QPushButton("Start Recording")
+        self.start_record_button.clicked.connect(self.start_recording)
+        temp.addWidget(self.start_record_button)
+
+        self.stop_record_button = QPushButton("Stop Recording")
+        self.stop_record_button.clicked.connect(self.stop_recording)
+        temp.addWidget(self.stop_record_button)
+        recording_layout.addLayout(temp)
+
+        main_layout.addWidget(recording_group)
+
+        # Interval Settings
+        interval_group = QGroupBox("Interval between actions")
+        interval_layout = QVBoxLayout()
+        interval_group.setLayout(interval_layout)
+
+        self.random_delay_checkbox = QCheckBox("Random interval")
+        self.random_delay_checkbox.stateChanged.connect(self.update_random_delay_visibility)
+        interval_layout.addWidget(self.random_delay_checkbox)
+
+        # Create stacked layout for fixed and random interval inputs
+        self.interval_stacked_layout = QStackedLayout()
+        self.fixed_interval_widget = QWidget()
+        self.random_interval_widget = QWidget()
+
+        # Fixed interval layout
+        fixed_interval_layout = QHBoxLayout(self.fixed_interval_widget)
         self.hours_input = QSpinBox(self)
         self.hours_input.setRange(0, 23)
+        self.hours_label = QLabel("Hours")
         self.minutes_input = QSpinBox(self)
         self.minutes_input.setRange(0, 59)
+        self.minute_label = QLabel("Minutes")
         self.seconds_input = QSpinBox(self)
         self.seconds_input.setRange(0, 59)
+        self.seconds_label = QLabel("Seconds")
         self.milliseconds_input = QSpinBox(self)
         self.milliseconds_input.setRange(0, 999)
-        self.interval_layout.addWidget(QLabel("Hours"))
-        self.interval_layout.addWidget(self.hours_input)
-        self.interval_layout.addWidget(QLabel("Minutes"))
-        self.interval_layout.addWidget(self.minutes_input)
-        self.interval_layout.addWidget(QLabel("Seconds"))
-        self.interval_layout.addWidget(self.seconds_input)
-        self.interval_layout.addWidget(QLabel("Milliseconds"))
-        self.interval_layout.addWidget(self.milliseconds_input)
-        layout.addLayout(self.interval_layout)
+        self.milliseconds_label = QLabel("Milliseconds")
+        fixed_interval_layout.addWidget(self.hours_label)
+        fixed_interval_layout.addWidget(self.hours_input)
+        fixed_interval_layout.addWidget(self.minute_label)
+        fixed_interval_layout.addWidget(self.minutes_input)
+        fixed_interval_layout.addWidget(self.seconds_label)
+        fixed_interval_layout.addWidget(self.seconds_input)
+        fixed_interval_layout.addWidget(self.milliseconds_label)
+        fixed_interval_layout.addWidget(self.milliseconds_input)
 
-        self.run_mode_combo = QComboBox()
-        self.run_mode_combo.addItems(["Infinite (Until Stopped)", "X times"])
-        layout.addWidget(QLabel("Run Mode:"))
-        layout.addWidget(self.run_mode_combo)
+        # Random interval layout
+        random_interval_layout = QHBoxLayout(self.random_interval_widget)
+        self.min_delay_input = QSpinBox(self)
+        self.min_delay_input.setRange(0, 3600)
+        self.max_delay_input = QSpinBox(self)
+        self.max_delay_input.setRange(0, 3600)
+        random_interval_layout.addWidget(QLabel("Min delay (s)"))
+        random_interval_layout.addWidget(self.min_delay_input)
+        random_interval_layout.addWidget(QLabel("Max delay (s)"))
+        random_interval_layout.addWidget(self.max_delay_input)
+
+        self.interval_stacked_layout.addWidget(self.fixed_interval_widget)
+        self.interval_stacked_layout.addWidget(self.random_interval_widget)
+        interval_layout.addLayout(self.interval_stacked_layout)
+
+        main_layout.addWidget(interval_group)
+
+        # Run Mode Settings
+        run_mode_group = QGroupBox("Run Mode")
+        run_mode_layout = QVBoxLayout()
+        run_mode_group.setLayout(run_mode_layout)
+
+        self.repeat_until_stopped_radio = QRadioButton("Repeat Until Stopped")
+        self.repeat_until_stopped_radio.setChecked(True)
+        self.repeat_radio = QRadioButton("Repeat 'X' times")
+        run_mode_layout.addWidget(self.repeat_until_stopped_radio)
+        run_mode_layout.addWidget(self.repeat_radio)
 
         self.run_times_input = QSpinBox(self)
         self.run_times_input.setMinimum(1)
         self.run_times_input.setMaximum(1000000)
         self.run_times_input.setValue(1)
-        layout.addWidget(self.run_times_input)
+        run_mode_layout.addWidget(self.run_times_input)
 
-        self.setLayout(layout)
+        main_layout.addWidget(run_mode_group)
+
+        # Start and Stop Buttons for Script Execution
+        self.start_stop_layout = QHBoxLayout()
+        self.run_button = QPushButton("Run Script")
+        self.run_button.setObjectName("startButton")
+        self.run_button.clicked.connect(self.run_script)
+        self.start_stop_layout.addWidget(self.run_button)
+
+        self.stop_button = QPushButton("Stop Script")
+        self.stop_button.setObjectName("stopButton")
+        self.stop_button.clicked.connect(self.stop_script)
+        self.start_stop_layout.addWidget(self.stop_button)
+
+        main_layout.addLayout(self.start_stop_layout)
+
+        self.setLayout(main_layout)
+
+        # Apply CSS Styles
+        self.applyStyles()
+
+    def applyStyles(self):
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #f9f9f9;
+                font-family: Arial, sans-serif;
+            }
+            QGroupBox {
+                border: 1px solid #d3d3d3;
+                border-radius: 5px;
+                margin-top: 10px;
+                padding: 10px;
+                font-weight: bold;
+                color: #333;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                subcontrol-position: top center;
+                padding: 0 3px;
+                background-color: #e6e6e6;
+                border-radius: 5px;
+            }
+            QLabel {
+                font-size: 14px;
+                color: #555;
+            }
+            QLabel#title {
+                font-size: 16px;
+                color: #000000;
+                font-weight: bold;
+                margin-bottom: 10px;
+                border: 1px solid #d3d3d3;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QComboBox, QSpinBox, QLineEdit, QTextEdit {
+                padding: 5px;
+                margin: 5px 0;
+                border: 1px solid #d3d3d3;
+                border-radius: 5px;
+            }
+            QPushButton {
+                font-size: 16px;
+                color: #fff;
+                background-color: #0078d7;
+                border: none;
+                border-radius: 5px;
+                padding: 5px 5px;
+                margin: 5px 0;
+            }
+            QPushButton:hover {
+                background-color: #005bb5;
+            }
+            QPushButton:pressed {
+                background-color: #003f8a;
+            }
+            QPushButton:focus {
+                outline: none;
+            }
+            QPushButton#startButton {
+                background-color: #28a745;
+                max-width: 100%;
+                padding: 10px 20px;
+                margin: 10px 0;
+            }
+            QPushButton#startButton:hover {
+                background-color: #218838;
+                max-width: 100%;
+                padding: 10px 20px;
+                margin: 10px 0;
+            }
+            QPushButton#startButton:pressed {
+                background-color: #1e7e34;
+                max-width: 100%;
+                padding: 10px 20px;
+                margin: 10px 0;
+            }
+            QPushButton#stopButton {
+                background-color: #dc3545;
+                max-width: 100%;
+                padding: 10px 20px;
+                margin: 10px 0;
+            }
+            QPushButton#stopButton:hover {
+                background-color: #c82333;
+                max-width: 100%;
+                padding: 10px 20px;
+                margin: 10px 0;
+            }
+            QPushButton#stopButton:pressed {
+                background-color: #bd2130;'
+                max-width: 100%;
+                padding: 10px 20px;
+                margin: 10px 0;
+            }
+        """)
 
     def load_script(self):
         options = QFileDialog.Options()
@@ -124,27 +296,34 @@ class Scripts(QWidget):
         else:
             QMessageBox.warning(self, "Warning", "No script is running.")
 
-    def toggle_recording(self):
-        if self.listener is None:
-            self.start_recording()
-            self.record_button.setText("Stop Recording")
-        else:
-            self.stop_recording()
-            self.record_button.setText("Start Recording")
-
     def start_recording(self):
-        self.listener = Listener(self.script_editor, self.record_delay_checkbox.isChecked())
-        self.listener.signal_emitter = self.signal_emitter
-        self.listener.start()
+        if self.listener is None:
+            self.listener = Listener(self.script_editor, self.record_delay_checkbox.isChecked())
+            self.listener.signal_emitter = self.signal_emitter
+            self.listener.start()
 
     def stop_recording(self):
         if self.listener:
             self.listener.stop()
             self.listener = None
 
+    def update_random_delay_visibility(self):
+        if self.random_delay_checkbox.isChecked():
+            self.interval_stacked_layout.setCurrentWidget(self.random_interval_widget)
+        else:
+            self.interval_stacked_layout.setCurrentWidget(self.fixed_interval_widget)
+
     def update_script_editor(self, text):
         self.script_editor.append(text)
     
+    def get_interval(self):
+        hours = self.hours_input.value()
+        minutes = self.minutes_input.value()
+        seconds = self.seconds_input.value()
+        milliseconds = self.milliseconds_input.value()
+        total_seconds = hours * 3600 + minutes * 60 + seconds + milliseconds / 1000.0
+        return total_seconds
+
     def get_settings(self):
         return {
             'script_content': self.script_editor.toPlainText(),

@@ -188,7 +188,7 @@ class MouseClicker(QWidget):
         self.update_random_delay_visibility()
 
         # Start timer to update mouse position
-        self.timer.start(100)  # Update every 100 ms
+        self.timer.start(0)  # Update every 100 ms
 
         # Apply CSS Styles
         self.applyStyles()
@@ -293,27 +293,16 @@ class MouseClicker(QWidget):
         self.rectangle_bottom_right_x.setVisible(is_rectangle)
         self.rectangle_bottom_right_y_label.setVisible(is_rectangle)
         self.rectangle_bottom_right_y.setVisible(is_rectangle)
-        
-        # Adjust window size after updating visibility
-        #if is_coordinates or is_rectangle:
-        self.position_group.adjustSize()
-        #self.interval_group.adjustSize()
-        #self.title.adjustSize()
-        self.adjustSize()
-        #self.setFixedSize(self.sizeHint())
 
     def update_random_delay_visibility(self):
         if self.random_delay_checkbox.isChecked():
             self.interval_stacked_layout.setCurrentWidget(self.random_interval_widget)
         else:
             self.interval_stacked_layout.setCurrentWidget(self.fixed_interval_widget)
-        # Adjust window size after updating visibility
-        #self.adjustSize()
 
     def update_mouse_position(self):
         pos = pyautogui.position()
         self.mouse_position_label.setText(f"Current Mouse Position:\n (X: {pos.x}, Y: {pos.y})")
-        self.adjustSize()
 
     def get_interval(self):
         hours = self.hours_input.value()

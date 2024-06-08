@@ -1,5 +1,5 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QListWidget, QFileDialog, QApplication
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QListWidget, QFileDialog, QApplication, QGroupBox
 from PyQt5.QtCore import pyqtSignal
 import json
 import os
@@ -14,24 +14,121 @@ class Profiles(QWidget):
         self.initUI()
 
     def initUI(self):
-        layout = QVBoxLayout()
-        layout.setAlignment(Qt.AlignTop)
+        main_layout = QVBoxLayout()
+        main_layout.setAlignment(Qt.AlignTop)
 
-        layout.addWidget(QLabel("Profiles Section"))
+        self.title = QLabel("Profiles Section")
+        self.title.setObjectName("title")
+        self.title.setAlignment(Qt.AlignCenter)
+        main_layout.addWidget(self.title) 
 
-        save_button = QPushButton("Save Profile", self)
-        save_button.clicked.connect(self.save_profile)
-        layout.addWidget(save_button)
+        # Profile Actions
+        profile_actions_group = QGroupBox("")
+        profile_actions_layout = QVBoxLayout()
+        profile_actions_group.setLayout(profile_actions_layout)
 
-        load_button = QPushButton("Load Profile", self)
-        load_button.clicked.connect(self.load_profile)
-        layout.addWidget(load_button)
+        self.save_button = QPushButton("Save Profile")
+        self.save_button.clicked.connect(self.save_profile)
+        profile_actions_layout.addWidget(self.save_button)
 
-        reset_button = QPushButton("Reset to Default Profile", self)
-        reset_button.clicked.connect(self.reset_to_default)
-        layout.addWidget(reset_button)
+        self.load_button = QPushButton("Load Profile")
+        self.load_button.clicked.connect(self.load_profile)
+        profile_actions_layout.addWidget(self.load_button)
 
-        self.setLayout(layout)
+        self.reset_button = QPushButton("Reset to Default Profile")
+        self.reset_button.clicked.connect(self.reset_to_default)
+        profile_actions_layout.addWidget(self.reset_button)
+
+        main_layout.addWidget(profile_actions_group)
+
+        self.setLayout(main_layout)
+
+        # Apply CSS Styles
+        self.applyStyles()
+
+    def applyStyles(self):
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #f9f9f9;
+                font-family: Arial, sans-serif;
+            }
+            QGroupBox {
+                border: 1px solid #d3d3d3;
+                border-radius: 5px;
+                margin-top: 10px;
+                padding: 10px;
+                font-weight: bold;
+                color: #333;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                subcontrol-position: top center;
+                padding: 0 3px;
+                background-color: #e6e6e6;
+                border-radius: 5px;
+            }
+            QLabel {
+                font-size: 14px;
+                color: #555;
+            }
+            QLabel#title {
+                font-size: 16px;
+                color: #000000;
+                font-weight: bold;
+                margin-bottom: 10px;
+                border: 1px solid #d3d3d3;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QComboBox, QSpinBox, QLineEdit, QTextEdit {
+                padding: 5px;
+                margin: 5px 0;
+                border: 1px solid #d3d3d3;
+                border-radius: 5px;
+            }
+            QPushButton {
+                font-size: 16px;
+                color: #fff;
+                background-color: #0078d7;
+                border: none;
+                border-radius: 5px;
+                padding: 10px 20px;
+                margin: 10px 0;
+            }
+            QPushButton:hover {
+                background-color: #005bb5;
+            }
+            QPushButton:pressed {
+                background-color: #003f8a;
+            }
+            QPushButton:focus {
+                outline: none;
+            }
+            QPushButton#startButton {
+                background-color: #28a745;
+                max-width: 100%;
+            }
+            QPushButton#startButton:hover {
+                background-color: #218838;
+                max-width: 100%;
+            }
+            QPushButton#startButton:pressed {
+                background-color: #1e7e34;
+                max-width: 100%;
+            }
+            QPushButton#stopButton {
+                background-color: #dc3545;
+                max-width: 100%;
+            }
+            QPushButton#stopButton:hover {
+                background-color: #c82333;
+                max-width: 100%;
+            }
+            QPushButton#stopButton:pressed {
+                background-color: #bd2130;'
+                max-width: 100%;
+            }
+        """)
 
     def save_profile(self):
         profile_name, _ = QFileDialog.getSaveFileName(self, "Save Profile", "", "JSON Files (*.json);;All Files (*)")
