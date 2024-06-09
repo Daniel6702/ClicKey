@@ -5,7 +5,6 @@ import sys
 
 class Settings(QWidget):
     settingsChanged = pyqtSignal(dict)
-    emergencyStop = pyqtSignal()
     hideApp = pyqtSignal()
     showApp = pyqtSignal()
 
@@ -15,11 +14,17 @@ class Settings(QWidget):
             'start_mouse_clicker_hotkey': 'Ctrl+Shift+M',
             'stop_mouse_clicker_hotkey': 'Ctrl+Shift+N',
             'start_key_presser_hotkey': 'Ctrl+Shift+K',
-            'stop_key_presser_hotkey': 'Ctrl+Shift+L'
+            'stop_key_presser_hotkey': 'Ctrl+Shift+L',
+            'run_script_hotkey': 'Ctrl+Shift+R',
+            'stop_script_hotkey': 'Ctrl+Shift+S',
+            'toggle_overlay_hotkey': 'Ctrl+Shift+O',
         }
         self.settings = self.default_settings.copy()
         self.initUI()
         self.initTray()
+    
+    def get_default_settings(self):
+        return self.default_settings.copy()
 
     def initUI(self):
         main_layout = QVBoxLayout()
@@ -37,18 +42,21 @@ class Settings(QWidget):
         hotkeys_group.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
 
         # Hotkey Table
-        self.hotkey_table = QTableWidget(4, 2)
+        self.hotkey_table = QTableWidget(7, 2)
         self.hotkey_table.setHorizontalHeaderLabels(["Hotkey", "Key"])
         self.hotkey_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.hotkey_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.hotkey_table.verticalHeader().setVisible(False)
-        self.hotkey_table.setFixedHeight(self.hotkey_table.horizontalHeader().height() + 5 * self.hotkey_table.rowHeight(0))
+        self.hotkey_table.setFixedHeight(self.hotkey_table.horizontalHeader().height() + 8 * self.hotkey_table.rowHeight(0))
 
         hotkeys = [
             ("Start Mouse Clicker", self.settings['start_mouse_clicker_hotkey']),
             ("Stop Mouse Clicker", self.settings['stop_mouse_clicker_hotkey']),
             ("Start Key Presser", self.settings['start_key_presser_hotkey']),
-            ("Stop Key Presser", self.settings['stop_key_presser_hotkey'])
+            ("Stop Key Presser", self.settings['stop_key_presser_hotkey']),
+            ("Run Script", self.settings['run_script_hotkey']),
+            ("Stop Script", self.settings['stop_script_hotkey']),
+            ("Toggle Overlay", self.settings['toggle_overlay_hotkey'])
         ]
 
         for row, (name, key) in enumerate(hotkeys):
@@ -66,10 +74,6 @@ class Settings(QWidget):
         hotkeys_layout.addWidget(self.reset_button)
 
         main_layout.addWidget(hotkeys_group)
-
-        self.emergency_button = QPushButton("Emergency Stop")
-        self.emergency_button.clicked.connect(self.emergency_stop)
-        main_layout.addWidget(self.emergency_button)
 
         self.hide_button = QPushButton("Hide to Tray")
         self.hide_button.clicked.connect(self.hide_app)
@@ -89,6 +93,21 @@ class Settings(QWidget):
             QLabel {
                 font-size: 14px;
                 color: #555;
+            }
+            QGroupBox {
+                border: 1px solid #d3d3d3;
+                border-radius: 5px;
+                margin-top: 10px;
+                padding: 10px;
+                font-weight: bold;
+                color: #333;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                subcontrol-position: top center;
+                padding: 0 3px;
+                background-color: #e6e6e6;
+                border-radius: 5px;
             }
             QLabel#title {
                 font-size: 16px;
@@ -174,6 +193,9 @@ class Settings(QWidget):
         self.settings['stop_mouse_clicker_hotkey'] = self.hotkey_table.item(1, 1).text()
         self.settings['start_key_presser_hotkey'] = self.hotkey_table.item(2, 1).text()
         self.settings['stop_key_presser_hotkey'] = self.hotkey_table.item(3, 1).text()
+        self.settings['run_script_hotkey'] = self.hotkey_table.item(4, 1).text()
+        self.settings['stop_script_hotkey'] = self.hotkey_table.item(5, 1).text()
+        self.settings['toggle_overlay_hotkey'] = self.hotkey_table.item(6, 1).text()
         self.settingsChanged.emit(self.settings)
 
     def reset_settings(self):
@@ -182,6 +204,9 @@ class Settings(QWidget):
         self.hotkey_table.item(1, 1).setText(self.settings['stop_mouse_clicker_hotkey'])
         self.hotkey_table.item(2, 1).setText(self.settings['start_key_presser_hotkey'])
         self.hotkey_table.item(3, 1).setText(self.settings['stop_key_presser_hotkey'])
+        self.hotkey_table.item(4, 1).setText(self.settings['run_script_hotkey'])
+        self.hotkey_table.item(5, 1).setText(self.settings['stop_script_hotkey'])
+        self.hotkey_table.item(6, 1).setText(self.settings['toggle_overlay_hotkey'])
         self.settingsChanged.emit(self.settings)
 
     def get_settings(self):
@@ -190,6 +215,9 @@ class Settings(QWidget):
             'stop_mouse_clicker_hotkey': self.hotkey_table.item(1, 1).text(),
             'start_key_presser_hotkey': self.hotkey_table.item(2, 1).text(),
             'stop_key_presser_hotkey': self.hotkey_table.item(3, 1).text(),
+            'run_script_hotkey': self.hotkey_table.item(4, 1).text(),
+            'stop_script_hotkey': self.hotkey_table.item(5, 1).text(),
+            'toggle_overlay_hotkey': self.hotkey_table.item(6, 1).text(),
         }
 
     def updateSettings(self, settings):
@@ -197,12 +225,12 @@ class Settings(QWidget):
         self.hotkey_table.item(1, 1).setText(settings.get('stop_mouse_clicker_hotkey', ''))
         self.hotkey_table.item(2, 1).setText(settings.get('start_key_presser_hotkey', ''))
         self.hotkey_table.item(3, 1).setText(settings.get('stop_key_presser_hotkey', ''))
+        self.hotkey_table.item(4, 1).setText(settings.get('run_script_hotkey', ''))
+        self.hotkey_table.item(5, 1).setText(settings.get('stop_script_hotkey', ''))
+        self.hotkey_table.item(6, 1).setText(settings.get('toggle_overlay_hotkey', ''))
 
     def get_default_settings(self):
         return self.default_settings.copy()
-
-    def emergency_stop(self):
-        self.emergencyStop.emit()
 
     def hide_app(self):
         self.hideApp.emit()
@@ -212,7 +240,6 @@ if __name__ == '__main__':
     ex = Settings()
     ex.resize(400, 500)
     ex.settingsChanged.connect(lambda settings: print(f"Settings changed: {settings}"))
-    ex.emergencyStop.connect(lambda: print("Emergency stop triggered!"))
     ex.hideApp.connect(lambda: print("Application hidden to tray."))
     ex.show()
     sys.exit(app.exec_())

@@ -8,9 +8,10 @@ import sys
 class Profiles(QWidget):
     profileLoaded = pyqtSignal(dict)
 
-    def __init__(self, profile_manager):
+    def __init__(self, profile_manager, main_app):
         super().__init__()
         self.profile_manager = profile_manager
+        self.main_app = main_app  # Store the reference to MainApp
         self.initUI()
 
     def initUI(self):
@@ -134,10 +135,10 @@ class Profiles(QWidget):
         profile_name, _ = QFileDialog.getSaveFileName(self, "Save Profile", "", "JSON Files (*.json);;All Files (*)")
         if profile_name:
             settings = {
-                'mouse_clicker': self.parent().mouse_clicker.get_settings(),
-                'key_presser': self.parent().key_presser.get_settings(),
-                'scripts': self.parent().scripts.get_settings(),
-                'settings': self.parent().settings.get_settings(),
+                'mouse_clicker': self.main_app.mouse_clicker.get_settings(),  # Use main_app reference
+                'key_presser': self.main_app.key_presser.get_settings(),
+                'scripts': self.main_app.scripts.get_settings(),
+                'settings': self.main_app.settings.get_settings(),
             }
             self.profile_manager.save_profile(profile_name, settings)
 
@@ -150,10 +151,10 @@ class Profiles(QWidget):
 
     def reset_to_default(self):
         default_settings = {
-            'mouse_clicker': self.parent().mouse_clicker.get_default_settings(),
-            'key_presser': self.parent().key_presser.get_default_settings(),
-            'scripts': self.parent().scripts.get_default_settings(),
-            'settings': self.parent().settings.get_default_settings(),
+            'mouse_clicker': self.main_app.mouse_clicker.get_default_settings(),  # Use main_app reference
+            'key_presser': self.main_app.key_presser.get_default_settings(),
+            'scripts': self.main_app.scripts.get_default_settings(),
+            'settings': self.main_app.settings.get_default_settings(),
         }
         self.profileLoaded.emit(default_settings)
 

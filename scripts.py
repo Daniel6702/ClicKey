@@ -1,11 +1,11 @@
 import sys
-import subprocess
-import os
+import pyautogui
+import time
+import random
 from PyQt5.QtWidgets import (QWidget, QLabel, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QSpinBox, QCheckBox, QComboBox, QFileDialog, QApplication, QMessageBox, QGroupBox, QRadioButton, QStackedLayout)
 from PyQt5.QtCore import Qt, pyqtSignal, QObject
 from pynput import keyboard, mouse
 import threading
-import time
 
 class SignalEmitter(QObject):
     text_signal = pyqtSignal(str)
@@ -28,7 +28,14 @@ class Scripts(QWidget):
         self.title.setAlignment(Qt.AlignCenter)
         main_layout.addWidget(self.title) 
 
-        # Buttons for Script Actions
+        self.status_label = QLabel("Status: Idle")
+        self.status_label.setAlignment(Qt.AlignCenter)
+        main_layout.addWidget(self.status_label)
+
+        temp3 = QVBoxLayout()
+        temp4 = QHBoxLayout()
+
+        #Script Group
         script_actions_group = QGroupBox("Script")
         script_actions_layout = QVBoxLayout()
         script_actions_group.setLayout(script_actions_layout)
@@ -36,20 +43,9 @@ class Scripts(QWidget):
         self.script_editor = QTextEdit()
         script_actions_layout.addWidget(self.script_editor)
 
-        temp = QHBoxLayout()
-        self.load_button = QPushButton("Load Script")
-        self.load_button.clicked.connect(self.load_script)
-        temp.addWidget(self.load_button)
-
-        self.save_button = QPushButton("Save Script")
-        self.save_button.clicked.connect(self.save_script)
-        temp.addWidget(self.save_button)
-        script_actions_layout.addLayout(temp)
-
-        main_layout.addWidget(script_actions_group)
 
         # Recording Options
-        recording_group = QGroupBox("Recording Options")
+        recording_group = QGroupBox("Script Actions")
         recording_layout = QVBoxLayout()
         recording_group.setLayout(recording_layout)
 
@@ -65,12 +61,46 @@ class Scripts(QWidget):
         self.stop_record_button = QPushButton("Stop Recording")
         self.stop_record_button.clicked.connect(self.stop_recording)
         temp.addWidget(self.stop_record_button)
-        recording_layout.addLayout(temp)
 
-        main_layout.addWidget(recording_group)
+        temp2 = QHBoxLayout()
+        self.load_button = QPushButton("Load Script")
+        self.load_button.clicked.connect(self.load_script)
+        temp2.addWidget(self.load_button)
+
+        self.save_button = QPushButton("Save Script")
+        self.save_button.clicked.connect(self.save_script)
+        temp2.addWidget(self.save_button)
+
+        recording_layout.addLayout(temp)
+        recording_layout.addLayout(temp2)
+
+
+        # Run Mode Settings
+        run_mode_group = QGroupBox("Run Mode")
+        run_mode_layout = QVBoxLayout()
+        run_mode_group.setLayout(run_mode_layout)
+
+        self.repeat_until_stopped_radio = QRadioButton("Repeat Until Stopped")
+        self.repeat_until_stopped_radio.setChecked(True)
+        self.repeat_radio = QRadioButton("Repeat 'X' times")
+        run_mode_layout.addWidget(self.repeat_until_stopped_radio)
+        run_mode_layout.addWidget(self.repeat_radio)
+
+        self.run_times_input = QSpinBox(self)
+        self.run_times_input.setMinimum(1)
+        self.run_times_input.setMaximum(1000000)
+        self.run_times_input.setValue(1)
+        run_mode_layout.addWidget(self.run_times_input)
+
+        temp3.addWidget(recording_group)
+        temp3.addWidget(run_mode_group)
+        temp4.addLayout(temp3)
+        temp4.addWidget(script_actions_group)
+
+        main_layout.addLayout(temp4)
 
         # Interval Settings
-        interval_group = QGroupBox("Interval between actions")
+        interval_group = QGroupBox("Interval between Repeats")
         interval_layout = QVBoxLayout()
         interval_group.setLayout(interval_layout)
 
@@ -122,25 +152,6 @@ class Scripts(QWidget):
         interval_layout.addLayout(self.interval_stacked_layout)
 
         main_layout.addWidget(interval_group)
-
-        # Run Mode Settings
-        run_mode_group = QGroupBox("Run Mode")
-        run_mode_layout = QVBoxLayout()
-        run_mode_group.setLayout(run_mode_layout)
-
-        self.repeat_until_stopped_radio = QRadioButton("Repeat Until Stopped")
-        self.repeat_until_stopped_radio.setChecked(True)
-        self.repeat_radio = QRadioButton("Repeat 'X' times")
-        run_mode_layout.addWidget(self.repeat_until_stopped_radio)
-        run_mode_layout.addWidget(self.repeat_radio)
-
-        self.run_times_input = QSpinBox(self)
-        self.run_times_input.setMinimum(1)
-        self.run_times_input.setMaximum(1000000)
-        self.run_times_input.setValue(1)
-        run_mode_layout.addWidget(self.run_times_input)
-
-        main_layout.addWidget(run_mode_group)
 
         # Start and Stop Buttons for Script Execution
         self.start_stop_layout = QHBoxLayout()
@@ -260,7 +271,7 @@ class Scripts(QWidget):
     def load_script(self):
         options = QFileDialog.Options()
         file_name, _ = QFileDialog.getOpenFileName(self, "Load Script", "",
-                                                   "AHK Scripts (*.ahk);;All Files (*)", options=options)
+                                                   "Text Files (*.txt);;All Files (*)", options=options)
         if file_name:
             with open(file_name, 'r') as file:
                 self.script_editor.setPlainText(file.read())
@@ -268,7 +279,7 @@ class Scripts(QWidget):
     def save_script(self):
         options = QFileDialog.Options()
         file_name, _ = QFileDialog.getSaveFileName(self, "Save Script", "",
-                                                   "AHK Scripts (*.ahk);;All Files (*)", options=options)
+                                                   "Text Files (*.txt);;All Files (*)", options=options)
         if file_name:
             with open(file_name, 'w') as file:
                 file.write(self.script_editor.toPlainText())
@@ -279,19 +290,15 @@ class Scripts(QWidget):
             QMessageBox.warning(self, "Warning", "Script content is empty.")
             return
 
-        self.temp_script_file = "temp_script.ahk"
-        with open(self.temp_script_file, 'w') as file:
-            file.write(script_content)
-
-        try:
-            self.process = subprocess.Popen(["autohotkey", self.temp_script_file])
-        except subprocess.CalledProcessError as e:
-            QMessageBox.critical(self, "Error", f"Failed to run script: {e}")
+        actions = script_content.split('\n')
+        self.status_label.setText("Status: Running Script")
+        self.script_runner = ScriptRunner(actions, self.repeat_radio.isChecked(), self.repeat_until_stopped_radio.isChecked(), self.run_times_input.value(), self.get_interval(), self.random_delay_checkbox.isChecked(), self.min_delay_input.value(), self.max_delay_input.value())
+        self.script_runner.start()
 
     def stop_script(self):
-        if self.process:
-            self.process.terminate()
-            self.process = None
+        if hasattr(self, 'script_runner') and self.script_runner.is_running:
+            self.script_runner.stop()
+            self.status_label.setText("Status: Idle")
             QMessageBox.information(self, "Info", "Script stopped.")
         else:
             QMessageBox.warning(self, "Warning", "No script is running.")
@@ -301,11 +308,14 @@ class Scripts(QWidget):
             self.listener = Listener(self.script_editor, self.record_delay_checkbox.isChecked())
             self.listener.signal_emitter = self.signal_emitter
             self.listener.start()
+            self.status_label.setText("Status: Recording")
 
     def stop_recording(self):
         if self.listener:
             self.listener.stop()
             self.listener = None
+            self.script_editor.setPlainText(self.script_editor.toPlainText().rsplit('\n', 1)[0])
+            self.status_label.setText("Status: Idle")
 
     def update_random_delay_visibility(self):
         if self.random_delay_checkbox.isChecked():
@@ -317,19 +327,21 @@ class Scripts(QWidget):
         self.script_editor.append(text)
     
     def get_interval(self):
+        if self.random_delay_checkbox.isChecked():
+            return (self.min_delay_input.value(), self.max_delay_input.value())
         hours = self.hours_input.value()
         minutes = self.minutes_input.value()
         seconds = self.seconds_input.value()
         milliseconds = self.milliseconds_input.value()
         total_seconds = hours * 3600 + minutes * 60 + seconds + milliseconds / 1000.0
         return total_seconds
-
+    
     def get_settings(self):
         return {
             'script_content': self.script_editor.toPlainText(),
             'record_delay': self.record_delay_checkbox.isChecked(),
             'interval': self.get_interval(),
-            'run_mode': self.run_mode_combo.currentText(),
+            'run_mode': 'Infinite (Until Stopped)' if self.repeat_until_stopped_radio.isChecked() else 'Repeat X Times',
             'run_times': self.run_times_input.value(),
         }
 
@@ -337,11 +349,12 @@ class Scripts(QWidget):
         self.script_editor.setPlainText(settings['script_content'])
         self.record_delay_checkbox.setChecked(settings['record_delay'])
         interval = settings['interval']
-        self.hours_input.setValue(interval // 3600)
-        self.minutes_input.setValue((interval % 3600) // 60)
-        self.seconds_input.setValue(interval % 60)
+        self.hours_input.setValue(int(interval // 3600))
+        self.minutes_input.setValue(int((interval % 3600) // 60))
+        self.seconds_input.setValue(int(interval % 60))
         self.milliseconds_input.setValue(int((interval * 1000) % 1000))
-        self.run_mode_combo.setCurrentText(settings['run_mode'])
+        self.repeat_until_stopped_radio.setChecked(settings['run_mode'] == 'Infinite (Until Stopped)')
+        self.repeat_radio.setChecked(settings['run_mode'] == 'Repeat X Times')
         self.run_times_input.setValue(settings['run_times'])
 
     def get_default_settings(self):
@@ -352,6 +365,54 @@ class Scripts(QWidget):
             'run_mode': 'Infinite (Until Stopped)',
             'run_times': 1,
         }
+
+class ScriptRunner(threading.Thread):
+    def __init__(self, actions, repeat, repeat_inf, repeat_times, interval, random_interval, min_delay, max_delay):
+        super().__init__()
+        self.actions = actions
+        self.repeat = repeat
+        self.repeat_inf = repeat_inf
+        self.repeat_times = repeat_times
+        self.interval = interval
+        self.random_interval = random_interval
+        self.min_delay = min_delay
+        self.max_delay = max_delay
+        self.is_running = True
+
+    def run(self):
+        if self.random_interval:
+            interval = random.uniform(self.min_delay, self.max_delay)
+        else:
+            interval = self.interval
+
+        while self.is_running:
+            for action in self.actions:
+                if not self.is_running:
+                    break
+                self.execute_action(action)
+                
+            if self.repeat and not self.repeat_inf:
+                self.repeat_times -= 1
+                if self.repeat_times <= 0:
+                    break   
+
+            time.sleep(interval)
+            
+    def execute_action(self, action):
+        action = action.strip()
+        if action.startswith("Send,"):
+            keys = action.replace("Send,", "").strip()
+            pyautogui.write(keys)
+        elif action.startswith("Click,"):
+            coords = action.replace("Click,", "").strip().split(",")
+            x, y = int(coords[0]), int(coords[1])
+            pyautogui.click(x, y)
+        elif action.startswith("Sleep,"):
+            delay = int(action.replace("Sleep,", "").strip()) / 1000.0
+            time.sleep(delay)
+
+    def stop(self):
+        self.is_running = False
 
 class Listener(threading.Thread):
     def __init__(self, editor, record_delay):
@@ -382,7 +443,7 @@ class Listener(threading.Thread):
         delay = current_time - self.last_time
         self.last_time = current_time
         if self.signal_emitter and delay > 0:
-            self.signal_emitter.text_signal.emit(f"Sleep, {int(delay * 1000)}\n")
+            self.signal_emitter.text_signal.emit(f"Sleep, {int(delay * 1000)}")
 
     def on_press(self, key):
         self.record_delay_func()
@@ -391,13 +452,13 @@ class Listener(threading.Thread):
         except AttributeError:
             key_str = key.name
         if self.signal_emitter:
-            self.signal_emitter.text_signal.emit(f"Send, {{{key_str}}}\n")
+            self.signal_emitter.text_signal.emit(f"Send, {key_str}")
 
     def on_click(self, x, y, button, pressed):
         if pressed:
             self.record_delay_func()
             if self.signal_emitter:
-                self.signal_emitter.text_signal.emit(f"Click, {x}, {y}\n")
+                self.signal_emitter.text_signal.emit(f"Click, {x}, {y}")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

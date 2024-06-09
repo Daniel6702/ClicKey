@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import QShortcut
 import random
 import threading
 import time
+import pyautogui
+import platform
 
 class KeyPresser(QWidget):
     def __init__(self):
@@ -15,6 +17,14 @@ class KeyPresser(QWidget):
 
         self.is_running = False
         self.thread = None
+
+    def play_beep(self):
+        if platform.system() == "Windows":
+            import winsound
+            winsound.Beep(1000, 500)  # Frequency = 1000 Hz, Duration = 500 ms
+        elif platform.system() == "Darwin":
+            import os
+            os.system('echo -n "\a"')
 
     def updateSettings(self, settings):
         self.start_hotkey = settings['start_key_presser_hotkey']
@@ -29,6 +39,10 @@ class KeyPresser(QWidget):
         self.title.setObjectName("title")
         self.title.setAlignment(Qt.AlignCenter)
         main_layout.addWidget(self.title)
+
+        self.status_label = QLabel("Status: Idle")
+        self.status_label.setAlignment(Qt.AlignCenter)
+        main_layout.addWidget(self.status_label)
 
         # Group Box for Key and Action
         key_action_group = QGroupBox("Key Action")
@@ -266,9 +280,10 @@ class KeyPresser(QWidget):
         return total_seconds
 
     def start_presser(self):
-        time.sleep(2)
+        time.sleep(1)
         if not self.is_running:
             self.is_running = True
+            self.status_label.setText("Status: Running")
             interval = self.get_interval()
             key = self.key_input.text()
             random_delay = self.random_delay_checkbox.isChecked()
@@ -290,6 +305,7 @@ class KeyPresser(QWidget):
     def stop_presser(self):
         if self.is_running:
             self.is_running = False
+            self.status_label.setText("Status: Idle")
             if self.thread is not None:
                 self.thread.join()
 
@@ -298,33 +314,33 @@ class KeyPresser(QWidget):
 
         def play_sound():
             if sound_effect:
-                print("Beep")
+                self.play_beep()
 
         def press_with_modifiers(k):
             if modifiers['ctrl']:
-                print('Ctrl down')
+                pyautogui.keyDown('ctrl')
             if modifiers['alt']:
-                print('Alt down')
+                pyautogui.keyDown('alt')
             if modifiers['shift']:
-                print('Shift down')
+                pyautogui.keyDown('shift')
 
-            print(f'Press {k}')
+            pyautogui.press(k)
 
             if modifiers['ctrl']:
-                print('Ctrl up')
+                pyautogui.keyUp('ctrl')
             if modifiers['alt']:
-                print('Alt up')
+                pyautogui.keyUp('alt')
             if modifiers['shift']:
-                print('Shift up')
+                pyautogui.keyUp('shift')
 
             play_sound()
 
         if continuous_hold:
-            print(f'Key {key} down')
+            pyautogui.keyDown(key)
             play_sound()
             while self.is_running:
-                pass  # Keep the key pressed continuously
-            print(f'Key {key} up')
+                time.sleep(0.1)  # Sleep to prevent high CPU usage
+            pyautogui.keyUp(key)
             return
 
         while self.is_running and (press_times == -1 or presses < press_times):
@@ -335,17 +351,17 @@ class KeyPresser(QWidget):
                 if modifiers['ctrl'] or modifiers['alt'] or modifiers['shift']:
                     press_with_modifiers(key)
                 else:
-                    print(f'Key {key} down')
-                    print(f'Wait {interval}')
-                    print(f'Key {key} up')
+                    pyautogui.keyDown(key)
+                    time.sleep(interval)
+                    pyautogui.keyUp(key)
                     play_sound()
             else:
                 if modifiers['ctrl'] or modifiers['alt'] or modifiers['shift']:
                     press_with_modifiers(key)
                 else:
-                    print(f'Press {key}')
+                    pyautogui.press(key)
                     play_sound()
-                    print(f'Wait {interval}')
+                    time.sleep(interval)
 
             presses += 1
 
@@ -356,8 +372,8 @@ class KeyPresser(QWidget):
             'random_delay': self.random_delay_checkbox.isChecked(),
             'min_delay': self.min_delay_input.value(),
             'max_delay': self.max_delay_input.value(),
-            'click_times_mode': self.click_times_combo.currentText(),
-            'click_times': self.click_times_input.value(),
+            'click_times_mode': 'X times' if self.repeat_radio.isChecked() else 'Infinite (Until Stopped)',
+            'click_times': self.press_times_input.value(),
             'hold_key': self.hold_key_checkbox.isChecked(),
             'continuous_hold': self.continuous_hold_checkbox.isChecked(),
             'modifiers': {
@@ -371,15 +387,16 @@ class KeyPresser(QWidget):
     def updateSettings(self, settings):
         self.key_input.setText(settings['key'])
         interval = settings['interval']
-        self.hours_input.setValue(interval // 3600)
-        self.minutes_input.setValue((interval % 3600) // 60)
-        self.seconds_input.setValue(interval % 60)
+        self.hours_input.setValue(int(interval // 3600))
+        self.minutes_input.setValue(int((interval % 3600) // 60))
+        self.seconds_input.setValue(int(interval % 60))
         self.milliseconds_input.setValue(int((interval * 1000) % 1000))
         self.random_delay_checkbox.setChecked(settings['random_delay'])
         self.min_delay_input.setValue(settings['min_delay'])
         self.max_delay_input.setValue(settings['max_delay'])
-        self.click_times_combo.setCurrentText(settings['click_times_mode'])
-        self.click_times_input.setValue(settings['click_times'])
+        self.repeat_radio.setChecked(settings['click_times_mode'] == 'X times')
+        self.repeat_until_stopped_radio.setChecked(settings['click_times_mode'] == 'Infinite (Until Stopped)')
+        self.press_times_input.setValue(settings['click_times'])
         self.hold_key_checkbox.setChecked(settings['hold_key'])
         self.continuous_hold_checkbox.setChecked(settings['continuous_hold'])
         self.ctrl_checkbox.setChecked(settings['modifiers']['ctrl'])

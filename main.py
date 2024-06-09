@@ -1,7 +1,8 @@
 import sys
+import keyboard
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QStackedWidget, QLabel
 from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtCore import Qt, QUrl, QTimer
+from PyQt5.QtCore import Qt, QUrl, QTimer, pyqtSignal
 from PyQt5.QtGui import QDesktopServices
 
 from mouse_clicker import MouseClicker
@@ -11,6 +12,8 @@ from scripts import Scripts
 from settings import Settings
 
 class MainApp(QWidget):
+    toggleOverlaySignal = pyqtSignal()
+
     def __init__(self):
         super().__init__()
         self.profile_manager = ProfileManager()
@@ -19,6 +22,9 @@ class MainApp(QWidget):
         self.timer.timeout.connect(self.adjustWindow)
         self.initUI()
         self.initConnections()
+        self.hotkeys = self.settings.get_default_settings()
+        self.hotkey_handlers = {} 
+        self.setup_hotkeys()
 
     def adjustWindow(self):
         self.mouse_clicker.adjustSize()
@@ -26,18 +32,19 @@ class MainApp(QWidget):
 
     def initUI(self):
         self.timer.start(0)
+
         def style_and_add_widget(widget, name):
             container = QWidget(self)
             container.setObjectName(name)
             layout = QVBoxLayout(container)
             layout.addWidget(widget)
-            container.setStyleSheet("""
+            container.setStyleSheet(f"""
                 #{name} {{
                     border: 1px solid #ccc;
                     border-radius: 5px;
                     background-color: #f0f0f0;
                 }}
-            """.format(name=name))
+            """)
             self.stacked_widget.addWidget(container)
             return container
 
@@ -53,7 +60,7 @@ class MainApp(QWidget):
         self.key_presser = KeyPresser()
         key_presser_container = style_and_add_widget(self.key_presser, "KeyPresserContainer")
 
-        self.profiles = Profiles(self.profile_manager)
+        self.profiles = Profiles(self.profile_manager, self)  # Pass self to Profiles
         profiles_container = style_and_add_widget(self.profiles, "ProfilesContainer")
 
         self.scripts = Scripts()
@@ -136,7 +143,7 @@ class MainApp(QWidget):
                 outline: none;
             }
         """)
-    
+
     def restore_window(self):
         self.setWindowState(self.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
         self.show()
@@ -151,22 +158,14 @@ class MainApp(QWidget):
         self.current_button = button
 
     def initConnections(self):
-        self.settings.settingsChanged.connect(self.handleSettingsChanged)
-        self.settings.emergencyStop.connect(self.handleEmergencyStop)
+        self.settings.settingsChanged.connect(self.handleHotkeyChange)
         self.settings.hideApp.connect(self.handleHideApp)
         self.settings.showApp.connect(self.restore_window)
         self.profiles.profileLoaded.connect(self.loadProfileSettings)
 
-    def handleSettingsChanged(self, settings):
-        print(f"Settings changed: {settings}")
-        self.mouse_clicker.updateSettings(settings)
-        self.key_presser.updateSettings(settings)
-        self.settings.updateSettings(settings)
-
-    def handleEmergencyStop(self):
-        print("Emergency stop triggered!")
-        self.mouse_clicker.stop_clicker()
-        self.key_presser.stop_presser()
+    def handleHotkeyChange(self, hotkeys):
+        self.hotkeys = hotkeys
+        self.setup_hotkeys()  # Re-setup hotkeys with new settings
 
     def handleHideApp(self):
         print("Application hidden to tray.")
@@ -181,7 +180,63 @@ class MainApp(QWidget):
     def openHelpPage(self):
         QDesktopServices.openUrl(QUrl("https://github.com/Daniel6702/ClicKey"))
 
+    def setup_hotkeys(self):
+        for hotkey, handler in self.hotkey_handlers.items():
+            keyboard.remove_hotkey(handler)
+
+        self.hotkey_handlers = {
+            'start_mouse_clicker_hotkey': keyboard.add_hotkey(self.hotkeys['start_mouse_clicker_hotkey'], self.mouse_clicker.start_clicker),
+            'stop_mouse_clicker_hotkey': keyboard.add_hotkey(self.hotkeys['stop_mouse_clicker_hotkey'], self.mouse_clicker.stop_clicker),
+            'start_key_presser_hotkey': keyboard.add_hotkey(self.hotkeys['start_key_presser_hotkey'], self.key_presser.start_presser),
+            'stop_key_presser_hotkey': keyboard.add_hotkey(self.hotkeys['stop_key_presser_hotkey'], self.key_presser.stop_presser),
+            'run_script_hotkey': keyboard.add_hotkey(self.hotkeys['run_script_hotkey'], self.scripts.run_script),
+            'stop_script_hotkey': keyboard.add_hotkey(self.hotkeys['stop_script_hotkey'], self.scripts.stop_script),
+            'toggle_overlay_hotkey': keyboard.add_hotkey(self.hotkeys['toggle_overlay_hotkey'], self.toggleOverlay)
+        }
+    
+    def toggleOverlay(self):
+        self.toggleOverlaySignal.emit()
+
+class Overlay(QWidget):
+    toggleOverlaySignal = pyqtSignal()
+
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+        self.hide()
+
+    def initUI(self):
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setGeometry(100, 100, 400, 300)  # Adjust the size and position as needed
+
+        layout = QVBoxLayout(self)
+
+        overlay_label = QLabel("Overlay Window", self)
+        overlay_label.setFont(QFont('Arial', 16))
+        overlay_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(overlay_label)
+
+        close_button = QPushButton("Close", self)
+        close_button.clicked.connect(self.hide)
+        layout.addWidget(close_button)
+
+        self.setLayout(layout)
+
+    def toggleOverlay(self):
+        if self.isVisible():
+            self.hide()
+        else:
+            self.show()
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = MainApp()
+    main_window = MainApp()
+
+    # Create overlay window
+    overlay_window = Overlay()
+
+    # Connect signals
+    main_window.toggleOverlaySignal.connect(overlay_window.toggleOverlay)
+
     sys.exit(app.exec_())

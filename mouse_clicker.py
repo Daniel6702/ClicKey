@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QApplication
 import time
+import platform
 
 class MouseClicker(QWidget):
     def __init__(self):
@@ -30,6 +31,10 @@ class MouseClicker(QWidget):
         self.title.setObjectName("title")
         self.title.setAlignment(Qt.AlignCenter)
         main_layout.addWidget(self.title)
+
+        self.status_label = QLabel("Status: Idle")
+        self.status_label.setAlignment(Qt.AlignCenter)
+        main_layout.addWidget(self.status_label)
 
         # Group Box for Mouse Button and Action
         button_action_group = QGroupBox("Click Action")
@@ -169,6 +174,10 @@ class MouseClicker(QWidget):
 
         main_layout.addWidget(self.position_group)
 
+        # Sound Effect Option
+        self.sound_effect_checkbox = QCheckBox("Sound effect on click")
+        main_layout.addWidget(self.sound_effect_checkbox)
+
         # Start and Stop Buttons
         self.start_stop_layout = QHBoxLayout()
         self.start_button = QPushButton("Start")
@@ -188,7 +197,7 @@ class MouseClicker(QWidget):
         self.update_random_delay_visibility()
 
         # Start timer to update mouse position
-        self.timer.start(0)  # Update every 100 ms
+        self.timer.start(100)  # Update every 100 ms
 
         # Apply CSS Styles
         self.applyStyles()
@@ -313,9 +322,10 @@ class MouseClicker(QWidget):
         return total_seconds
 
     def start_clicker(self):
-        time.sleep(2)
+        time.sleep(1)
         if not self.is_running:
             self.is_running = True
+            self.status_label.setText("Status: Running")
             interval = self.get_interval()
             button = self.button_combo.currentText()
             position = self.position_combo.currentText()
@@ -331,16 +341,26 @@ class MouseClicker(QWidget):
             random_delay = self.random_delay_checkbox.isChecked()
             min_delay = self.min_delay_input.value()
             max_delay = self.max_delay_input.value()
-            self.thread = threading.Thread(target=self.click_mouse, args=(button, interval, position, x, y, rect_tl_x, rect_tl_y, rect_br_x, rect_br_y, click_times, action, random_delay, min_delay, max_delay))
+            sound_effect = self.sound_effect_checkbox.isChecked()
+            self.thread = threading.Thread(target=self.click_mouse, args=(button, interval, position, x, y, rect_tl_x, rect_tl_y, rect_br_x, rect_br_y, click_times, action, random_delay, min_delay, max_delay, sound_effect))
             self.thread.start()
 
     def stop_clicker(self):
         if self.is_running:
             self.is_running = False
+            self.status_label.setText("Status: Idle")
             if self.thread is not None:
                 self.thread.join()
 
-    def click_mouse(self, button, interval, position, x, y, rect_tl_x, rect_tl_y, rect_br_x, rect_br_y, click_times, action, random_delay, min_delay, max_delay):
+    def play_beep(self):
+        if platform.system() == "Windows":
+            import winsound
+            winsound.Beep(1000, 500)
+        elif platform.system() == "Darwin":
+            import os
+            os.system('echo -n "\a"')
+
+    def click_mouse(self, button, interval, position, x, y, rect_tl_x, rect_tl_y, rect_br_x, rect_br_y, click_times, action, random_delay, min_delay, max_delay, sound_effect):
         clicks = 0
         while self.is_running and (click_times == -1 or clicks < click_times):
             if random_delay:
@@ -362,22 +382,36 @@ class MouseClicker(QWidget):
                 random_x = random.randint(rect_tl_x, rect_br_x)
                 random_y = random.randint(rect_tl_y, rect_br_y)
                 self.perform_action(button, action, random_x, random_y)
+            
+            if sound_effect:
+                self.play_beep()
+
             pyautogui.sleep(interval)
             clicks += 1
 
     def perform_action(self, button, action, x=None, y=None):
+        # Save the current cursor position
+        current_pos = pyautogui.position()
+        
+        # Move to the target position and perform the click action
+        if x is not None and y is not None:
+            pyautogui.moveTo(x, y)
+        
         if action == "single click":
             if button == "both":
-                pyautogui.click(x=x, y=y, button="left")
-                pyautogui.click(x=x, y=y, button="right")
+                pyautogui.click(button="left")
+                pyautogui.click(button="right")
             else:
-                pyautogui.click(x=x, y=y, button=button)
+                pyautogui.click(button=button)
         elif action == "double click":
             if button == "both":
-                pyautogui.doubleClick(x=x, y=y, button="left")
-                pyautogui.doubleClick(x=x, y=y, button="right")
+                pyautogui.doubleClick(button="left")
+                pyautogui.doubleClick(button="right")
             else:
-                pyautogui.doubleClick(x=x, y=y, button=button)
+                pyautogui.doubleClick(button=button)
+        
+        # Move the cursor back to the original position
+        pyautogui.moveTo(current_pos)
 
     def get_settings(self):
         return {
@@ -390,19 +424,21 @@ class MouseClicker(QWidget):
             'rect_tl_y': self.rectangle_top_left_y.text(),
             'rect_br_x': self.rectangle_bottom_right_x.text(),
             'rect_br_y': self.rectangle_bottom_right_y.text(),
-            'click_times_mode': self.click_times_combo.currentText(),
+            'click_times_mode': "X times" if self.repeat_radio.isChecked() else "Infinite (Until Stopped)",
             'click_times': self.click_times_input.value(),
             'action': self.action_combo.currentText(),
             'random_delay': self.random_delay_checkbox.isChecked(),
             'min_delay': self.min_delay_input.value(),
             'max_delay': self.max_delay_input.value(),
+            'sound_effect': self.sound_effect_checkbox.isChecked(),
         }
 
     def updateSettings(self, settings):
+        print(settings)
         self.button_combo.setCurrentText(settings['button'])
-        self.hours_input.setValue(settings['interval'] // 3600)
-        self.minutes_input.setValue((settings['interval'] % 3600) // 60)
-        self.seconds_input.setValue(settings['interval'] % 60)
+        self.hours_input.setValue(int(settings['interval']) // 3600)
+        self.minutes_input.setValue((int(settings['interval']) % 3600) // 60)
+        self.seconds_input.setValue(int(settings['interval']) % 60)
         self.milliseconds_input.setValue(int((settings['interval'] * 1000) % 1000))
         self.position_combo.setCurrentText(settings['position'])
         self.coord_x_input.setText(settings['coord_x'])
@@ -411,12 +447,14 @@ class MouseClicker(QWidget):
         self.rectangle_top_left_y.setText(settings['rect_tl_y'])
         self.rectangle_bottom_right_x.setText(settings['rect_br_x'])
         self.rectangle_bottom_right_y.setText(settings['rect_br_y'])
-        self.click_times_combo.setCurrentText(settings['click_times_mode'])
+        self.repeat_radio.setChecked(settings['click_times_mode'] == "X times")
+        self.repeat_until_stopped_radio.setChecked(settings['click_times_mode'] == "Infinite (Until Stopped)")
         self.click_times_input.setValue(settings['click_times'])
         self.action_combo.setCurrentText(settings['action'])
         self.random_delay_checkbox.setChecked(settings['random_delay'])
         self.min_delay_input.setValue(settings['min_delay'])
         self.max_delay_input.setValue(settings['max_delay'])
+        self.sound_effect_checkbox.setChecked(settings['sound_effect'])
 
     def get_default_settings(self):
         return {
@@ -435,6 +473,7 @@ class MouseClicker(QWidget):
             'random_delay': False,
             'min_delay': 0,
             'max_delay': 0,
+            'sound_effect': False,
         }
 
 if __name__ == '__main__':
