@@ -75,6 +75,6 @@ QPushButton#stopButton:hover {
     max-width: 100%;
 }
 QPushButton#stopButton:pressed {
-    background-color: #bd2130;
+    background-color: #bd2130;'
     max-width: 100%;
 }

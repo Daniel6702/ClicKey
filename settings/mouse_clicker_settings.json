@@ -1,7 +1,7 @@
 {
     "button": "left",
-    "click_inf": true,
-    "click_times": 1,
+    "repeat_inf": true,
+    "repeat_times": 1,
     "action": "single_click",
     "duration": 0.0,
     "position_mode": "follow_mouse",
