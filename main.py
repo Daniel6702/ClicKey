@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt, QUrl, QTimer, pyqtSignal
 from PyQt5.QtGui import QDesktopServices
 
 from mouse_clicker import MouseClicker
-from key_presser import KeyPresser
+from KeyPresser.old import KeyPresser
 from profiles import Profiles, ProfileManager
 from scripts import Scripts
 from settings import Settings

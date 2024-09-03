@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click and Key Press Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #clickArea {
+            width: 400px;
+            height: 400px;
+            border: 2px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .clickIndicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            position: absolute;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            animation: fadeOut 1s forwards;
+        }
+        .leftClick {
+            background-color: red;
+        }
+        .rightClick {
+            background-color: blue;
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(2);
+            }
+        }
+        #stats {
+            text-align: center;
+            margin-top: 20px;
+        }
+        #keyStats {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="clickArea">
+        Click inside this box or press a key
+    </div>
+    <div id="stats">
+        <p>Clicks: <span id="clickCount">0</span></p>
+        <p>Time Elapsed: <span id="timer">0.00</span> seconds</p>
+    </div>
+    <div id="keyStats">
+        <p>Key Presses: <span id="keyPressCount">0</span></p>
+        <p>Last Key Pressed: <span id="lastKey">None</span></p>
+        <p>Modifiers: <span id="modifiers">None</span></p>
+    </div>
+    <script>
+        let clickCount = 0;
+        let keyPressCount = 0;
+        let startTime = null;
+        let timerInterval = null;
+
+        document.getElementById('clickArea').addEventListener('click', function(event) {
+            handleClick(event, 'leftClick');
+        });
+
+        document.getElementById('clickArea').addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+            handleClick(event, 'rightClick');
+        });
+
+        document.addEventListener('keydown', function(event) {
+            handleKeyPress(event);
+        });
+
+        function handleClick(event, clickType) {
+            clickCount++;
+            document.getElementById('clickCount').textContent = clickCount;
+
+            if (clickCount === 1) {
+                startTimer();
+            }
+
+            const indicator = document.createElement('div');
+            indicator.className = `clickIndicator ${clickType}`;
+            indicator.style.left = event.clientX + 'px';
+            indicator.style.top = event.clientY + 'px';
+            document.body.appendChild(indicator);
+
+            setTimeout(() => {
+                indicator.remove();
+            }, 1000);
+        }
+
+        function handleKeyPress(event) {
+            keyPressCount++;
+            document.getElementById('keyPressCount').textContent = keyPressCount;
+
+            const keyName = event.key;
+            document.getElementById('lastKey').textContent = keyName;
+
+            let modifiers = [];
+            if (event.shiftKey) modifiers.push('Shift');
+            if (event.ctrlKey) modifiers.push('Ctrl');
+            if (event.altKey) modifiers.push('Alt');
+            if (modifiers.length === 0) modifiers.push('None');
+
+            document.getElementById('modifiers').textContent = modifiers.join(' + ');
+
+            if (keyPressCount === 1 && clickCount === 0) {
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            startTime = new Date();
+            timerInterval = setInterval(updateTimer, 10);
+        }
+
+        function updateTimer() {
+            if (startTime) {
+                const now = new Date();
+                const timeElapsed = (now - startTime) / 1000;
+                document.getElementById('timer').textContent = timeElapsed.toFixed(2);
+            }
+        }
+    </script>
+</body>
+</html>
