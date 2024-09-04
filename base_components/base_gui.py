@@ -28,7 +28,7 @@ class BaseAutoActionGUI(QWidget):
         self.repeat_action_widget = RepeatActionWidget()
         self.repeat_action_widget.change_settings.connect(self.changeSettings.emit)
 
-    def stop_signal_from_logic_to_gui(self):
+    def update_gui(self):
         self.start_stop_widget.change_status.emit(False)
         self.title_widget.change_status.emit(False)
 

@@ -28,7 +28,6 @@ class BaseAutoActionLogic:
             return self.settings.get('interval_norm', 1.0)
         
     def update_settings(self, new_settings: dict):
-        print(new_settings)
         for key, value in new_settings.items():
             if isinstance(value, dict):
                 if key in self.settings:

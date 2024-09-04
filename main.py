@@ -6,6 +6,9 @@ from mouse_clicker.clicker_gui import ClickerGUI
 from script_runner.script_logic import ScriptLogic
 from script_runner.script_gui import ScriptGUI
 from base_components.controller import AutoActionController
+from script_runner.script_controller import ScriptController
+from script_runner.script_logic import ScriptLogic
+from script_runner.script_gui import ScriptGUI
 
 import sys
 from PyQt5.QtWidgets import QApplication
@@ -18,5 +21,5 @@ def apply_stylesheet(app: QApplication, path: str) -> None:
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     apply_stylesheet(app, "style.qss")
-    controller = AutoActionController(ScriptLogic, ScriptGUI, "settings\\key_presser_settings.json")
+    controller = ScriptController("settings\\script_runner_settings.json")
     sys.exit(app.exec_())

@@ -12,5 +12,5 @@ class AutoActionController():
         self.logic.load_json_settings(settings_file)
         self.gui.show()
 
-    def update_GUI(self):
-        self.gui.stop_signal_from_logic_to_gui()
+    def update_GUI(self, *args, **kwargs):
+        self.gui.update_gui(*args, **kwargs)

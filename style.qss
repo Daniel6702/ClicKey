@@ -2,6 +2,7 @@ QWidget {
     background-color: #f9f9f9;
     font-family: Arial, sans-serif;
 }
+
 QGroupBox {
     border: 1px solid #d3d3d3;
     border-radius: 5px;
@@ -10,6 +11,7 @@ QGroupBox {
     font-weight: bold;
     color: #333;
 }
+
 QGroupBox::title {
     subcontrol-origin: margin;
     subcontrol-position: top center;
@@ -17,10 +19,12 @@ QGroupBox::title {
     background-color: #e6e6e6;
     border-radius: 5px;
 }
+
 QLabel {
     font-size: 14px;
     color: #555;
 }
+
 QLabel#title {
     font-size: 16px;
     color: #000000;
@@ -30,51 +34,68 @@ QLabel#title {
     border-radius: 5px;
     padding: 5px;
 }
+
 QComboBox, QSpinBox, QLineEdit {
     padding: 5px;
     margin: 5px 0;
     border: 1px solid #d3d3d3;
     border-radius: 5px;
 }
+
+/* Default QPushButton style */
 QPushButton {
     font-size: 16px;
-    color: #fff;
+    color: #fff; /* Ensure the text color is white for contrast */
     background-color: #0078d7;
     border: none;
     border-radius: 5px;
     padding: 10px 20px;
     margin: 10px 0;
 }
+
+/* When hovering, darken the button */
 QPushButton:hover {
     background-color: #005bb5;
 }
+
+/* When pressed, further darken the button */
 QPushButton:pressed {
     background-color: #003f8a;
 }
+
+/* Remove focus outline */
 QPushButton:focus {
     outline: none;
 }
+
+/* Start button styles */
 QPushButton#startButton {
     background-color: #28a745;
+    color: #fff; /* Ensure text is visible */
     max-width: 100%;
 }
+
 QPushButton#startButton:hover {
     border: 1px solid #090f0b;
-    max-width: 100%;
+    background-color: #218838;
 }
+
 QPushButton#startButton:checked {
     background-color: #ffc107;
     max-width: 100%;
 }
+
+/* Stop button styles */
 QPushButton#stopButton {
     background-color: #dc3545;
+    color: #fff; /* Ensure text is visible */
     max-width: 100%;
 }
+
 QPushButton#stopButton:hover {
     background-color: #c82333;
-    max-width: 100%;
 }
+
 QPushButton#stopButton:pressed {
-    background-color: #bd2130;'
-    max-width: 100%;
+    background-color: #bd2130;
 }
