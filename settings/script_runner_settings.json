@@ -1,3 +1,6 @@
 {
-    "delay": false
+    "delay": false,
+    "position": false,
+    "repeat_inf": true,
+    "repeat_times": 1
 }

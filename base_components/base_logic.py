@@ -4,8 +4,9 @@ import random
 import platform
 
 class BaseAutoActionLogic:
-    def __init__(self, update_GUI, settings_file='settings.json'):
-        self.settings = self.load_json_settings(settings_file)
+    def __init__(self, update_GUI, settings_file = None):
+        if settings_file:
+            self.settings = self.load_json_settings(settings_file)
         self.running = False
         self.stop_event = threading.Event()
         self.thread = None

@@ -3,9 +3,9 @@ from script_runner.script_logic import ScriptLogic
 from script_runner.script_gui import ScriptGUI
 
 class ScriptController(AutoActionController):
-    def __init__(self, settings_file: str):
+    def __init__(self, settings_file: str, show: bool = True):
         # Call the base controller's initializer with the ScriptLogic and ScriptGUI
-        super().__init__(ScriptLogic, ScriptGUI, settings_file)
+        super().__init__(ScriptLogic, ScriptGUI, settings_file, show)
 
         # Connect additional signals specific to script recording and execution
         self.gui.start_recording_signal.connect(self.logic.start_recording)
