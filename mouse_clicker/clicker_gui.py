@@ -37,3 +37,5 @@ class ClickerGUI(BaseAutoActionGUI):
 
         self.setLayout(main_layout)
 
+    
+

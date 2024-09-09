@@ -8,15 +8,12 @@ from base_components.gui_components.repetition_widget import RepeatActionWidget
 
 class BaseAutoActionGUI(QWidget):
     changeSettings = pyqtSignal(dict, name='changeSettings')
-    changeStatus = pyqtSignal(bool)
 
     def __init__(self, title: str):
         super().__init__()
-
+        
         self.title_widget = TitleWidget(title)
-
         self.start_stop_widget = StartStopWidget()
-        self.start_stop_widget.change_status.connect(self.changeStatus.emit)
         self.start_stop_widget.change_status.connect(self.title_widget.change_status.emit)
 
         self.sound_effect_checkbox = QCheckBox("Sound effect")
@@ -28,7 +25,7 @@ class BaseAutoActionGUI(QWidget):
         self.repeat_action_widget = RepeatActionWidget()
         self.repeat_action_widget.change_settings.connect(self.changeSettings.emit)
 
-    def update_gui(self):
+    def stop(self):
         self.start_stop_widget.change_status.emit(False)
         self.title_widget.change_status.emit(False)
 

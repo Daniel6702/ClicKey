@@ -5,6 +5,7 @@ import time
 from base_components.base_logic import BaseAutoActionLogic
 
 class ClickerLogic(BaseAutoActionLogic):
+
     def run(self):
         time.sleep(2)  # Initial delay
         clicks = 0
@@ -34,7 +35,7 @@ class ClickerLogic(BaseAutoActionLogic):
             if not self.stop_event.wait(interval):
                 continue
 
-        self.update_GUI()
+        self.stop_signal.emit()
 
     def perform_action(self, pos_x=None, pos_y=None):
         action = self.settings.get('action', 'single_click')

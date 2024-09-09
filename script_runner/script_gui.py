@@ -88,8 +88,6 @@ class ScriptGUI(BaseAutoActionGUI):
             self.stop_recording_signal.emit()
             self.script_editor.setReadOnly(False)
 
-    def update_gui(self, load_script=False, script=""):
-        if load_script:
-            self.script_editor.append(str(script))
-        else:
-            super().update_gui()
+    def update_script(self, script=""):
+        print(f"Updating script: {script}")
+        self.script_editor.append(str(script))

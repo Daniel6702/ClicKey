@@ -4,6 +4,7 @@ import threading
 import time
 
 class KeyPresserLogic(BaseAutoActionLogic):
+
     def run(self):
         time.sleep(2)  # Initial delay before starting
         presses = 0
@@ -23,7 +24,7 @@ class KeyPresserLogic(BaseAutoActionLogic):
             if not self.stop_event.wait(interval):
                 continue
 
-        self.update_GUI()
+        self.stop_signal.emit()
 
     def perform_action(self):
         key = self.settings.get('key', 'a')

@@ -2,19 +2,22 @@ import threading
 import json
 import random
 import platform
+from PyQt5.QtWidgets import QWidget
+from PyQt5.QtCore import pyqtSignal
 
-class BaseAutoActionLogic:
-    def __init__(self, update_GUI, settings_file = None):
-        if settings_file:
-            self.settings = self.load_json_settings(settings_file)
+class BaseAutoActionLogic(QWidget):
+    stop_signal = pyqtSignal()
+    
+    def __init__(self):
+        super().__init__()
         self.running = False
         self.stop_event = threading.Event()
         self.thread = None
-        self.update_GUI = update_GUI
 
-    def load_json_settings(self, file_path: str = 'settings.json') -> dict:
+    def load_json_settings(self, file_path: str) -> dict:
         with open(file_path, 'r') as file:
-            return json.load(file)
+            self.settings = json.load(file)
+            return self.settings
 
     def save_json_settings(self, settings, file_path: str = 'settings.json'):
         with open(file_path, 'w') as file:

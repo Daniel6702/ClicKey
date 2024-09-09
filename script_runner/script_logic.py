@@ -6,17 +6,18 @@ import keyboard  # For keyboard actions
 from PyQt5.QtWidgets import QFileDialog
 from base_components.base_logic import BaseAutoActionLogic
 from pynput import mouse, keyboard
-
+from PyQt5.QtCore import pyqtSignal
 
 class ScriptLogic(BaseAutoActionLogic):
-    def __init__(self, update_GUI, settings_file='settings.json'):
-        super().__init__(update_GUI, settings_file)
+    update_script_signal = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
         self.recording = False
         self.record_delay = False  
         self.start_time = None  
 
-        self.mouse_listener = mouse.Listener(on_click=self.on_click)
-        self.keyboard_listener = keyboard.Listener(on_press=self.on_press)
+        
         self.start_time = 0
         self.script = ""
 
@@ -52,7 +53,8 @@ class ScriptLogic(BaseAutoActionLogic):
         if delay_on:
             action["delay"] = round(time - self.start_time, 3)
             self.start_time = time
-        self.update_GUI(load_script=True, script=action)
+        print(f"New action: {action}")
+        self.update_script_signal.emit(str(action))
         self.script += str(action) + '\n'
 
     def run(self):
@@ -73,15 +75,19 @@ class ScriptLogic(BaseAutoActionLogic):
             if not self.stop_event.wait(interval):
                 continue
 
-        self.update_GUI()
+        self.stop_signal.emit()
 
     def start_recording(self):
+        print("Recording started")
         self.recording = True
         self.start_time = time.time()
+        self.mouse_listener = mouse.Listener(on_click=self.on_click)
+        self.keyboard_listener = keyboard.Listener(on_press=self.on_press)
         self.mouse_listener.start()
         self.keyboard_listener.start()
 
     def stop_recording(self):
+        print("Recording stopped")
         self.recording = False
         self.mouse_listener.stop()
         self.keyboard_listener.stop()
@@ -173,7 +179,7 @@ class ScriptLogic(BaseAutoActionLogic):
                 with open(file_name, 'r') as file:
                     self.script = json.load(file)
                 script_text = json.dumps(self.script, indent=4)
-                self.update_GUI(load_script=True, script=script_text)
+                self.update_script_signal.emit(script_text)
             except FileNotFoundError:
                 print("No script file found.")
 
