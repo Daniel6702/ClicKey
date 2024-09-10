@@ -2,5 +2,10 @@
     "delay": false,
     "position": false,
     "repeat_inf": true,
-    "repeat_times": 1
+    "repeat_times": 1,
+    "interval_norm": 1.0,
+    "random_interval": false,
+    "min_delay": 0.0,
+    "max_delay": 2.0,
+    "sound_effect": false
 }

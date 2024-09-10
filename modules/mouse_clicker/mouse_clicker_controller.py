@@ -1,6 +1,6 @@
 from base_components.controller import AutoActionController
-from mouse_clicker.clicker_logic import ClickerLogic
-from mouse_clicker.clicker_gui import ClickerGUI
+from modules.mouse_clicker.clicker_logic import ClickerLogic
+from modules.mouse_clicker.clicker_gui import ClickerGUI
 from PyQt5.QtWidgets import QWidget
 
 class ClickerController(AutoActionController, QWidget):

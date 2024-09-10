@@ -1,16 +1,7 @@
 from PyQt5.QtWidgets import QApplication,QLabel, QMainWindow, QWidget, QHBoxLayout, QListWidget,QVBoxLayout, QStackedWidget
 from PyQt5.QtCore import QTimer, Qt
-from mouse_clicker.mouse_clicker_controller import ClickerController
-from key_presser.key_presser_controller import PresserController
-from color_tool.color_tool_controller import ColorController
-from script_runner.script_controller import ScriptController
-from profile_manager.profiles_controller import ProfilesController
-
-MODULES = {"Mouse Clicker": ClickerController, 
-           "Key Presser": PresserController, 
-           "Color Tool": ColorController, 
-           "Script Runner": ScriptController, 
-           "Profiles": ProfilesController}
+from module_manager.utils import MODULES
+from modules.profile_manager.profiles_controller import ProfilesController
 
 class CentralManagerGUI(QMainWindow):
     def __init__(self):

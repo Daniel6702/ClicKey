@@ -3,11 +3,11 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 from random import randint
 
-from color_tool.color_picker.colorPickerWidget import ColorPickerWidget
+from modules.color_tool.color_picker.colorPickerWidget import ColorPickerWidget
 
 from base_components.base_gui import BaseAutoActionGUI
 
-from color_tool.pixel_color_detector import PixelDetectorWidget
+from modules.color_tool.pixel_color_detector import PixelDetectorWidget
 
 class ColorGUI(BaseAutoActionGUI):
     def __init__(self):

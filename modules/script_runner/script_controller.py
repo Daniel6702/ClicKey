@@ -1,6 +1,6 @@
 from base_components.controller import AutoActionController
-from script_runner.script_logic import ScriptLogic
-from script_runner.script_gui import ScriptGUI
+from modules.script_runner.script_logic import ScriptLogic
+from modules.script_runner.script_gui import ScriptGUI
 
 class ScriptController(AutoActionController):
     def __init__(self):

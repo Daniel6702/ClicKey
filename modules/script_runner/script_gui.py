@@ -91,3 +91,10 @@ class ScriptGUI(BaseAutoActionGUI):
     def update_script(self, script=""):
         print(f"Updating script: {script}")
         self.script_editor.append(str(script))
+
+    def update_settings(self, new_settings: dict):
+        super().update_settings(new_settings)
+        if new_settings.get('delay', None):
+            self.record_delay_checkbox.setChecked(new_settings['delay'])
+        if new_settings.get('position', None):
+            self.record_mouse_position_checkbox.setChecked(new_settings['position'])

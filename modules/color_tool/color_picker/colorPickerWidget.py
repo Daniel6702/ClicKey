@@ -4,10 +4,10 @@ from PyQt5.QtGui import QColor
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QSizePolicy, QGridLayout
 
-from color_tool.color_picker.colorSquareWidget import ColorSquareWidget
-from color_tool.color_picker.colorHueBarWidget import ColorHueBarWidget
-from color_tool.color_picker.colorEditorWidget import ColorEditorWidget
-from color_tool.color_picker.script import getColorByInstance
+from modules.color_tool.color_picker.colorSquareWidget import ColorSquareWidget
+from modules.color_tool.color_picker.colorHueBarWidget import ColorHueBarWidget
+from modules.color_tool.color_picker.colorEditorWidget import ColorEditorWidget
+from modules.color_tool.color_picker.script import getColorByInstance
 
 class ColorPickerWidget(QWidget):
     colorChanged = pyqtSignal(QColor)

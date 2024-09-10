@@ -1,6 +1,6 @@
 from base_components.controller import AutoActionController
-from profile_manager.profiles_logic import ProfilesLogic
-from profile_manager.profiles_gui import ProfilesGUI
+from modules.profile_manager.profiles_logic import ProfilesLogic
+from modules.profile_manager.profiles_gui import ProfilesGUI
 from PyQt5.QtWidgets import QWidget
 
 DEFAULT_SETTINGS_FILES = ['default_settings/color_tool_settings.json',

@@ -4,7 +4,7 @@ import json
 import os
 from PyQt5.QtWidgets import QFileDialog
 
-PROFILES_PATH = 'profile_manager/profiles'
+PROFILES_PATH = 'modules/profile_manager/profiles'
 
 class ProfilesLogic(BaseAutoActionLogic):
     add_profile = pyqtSignal(dict, name='addProfile')
