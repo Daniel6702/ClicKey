@@ -1,72 +1,66 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QListWidget, QStackedWidget
-from PyQt5.QtCore import QTimer
-
+from PyQt5.QtWidgets import QApplication,QLabel, QMainWindow, QWidget, QHBoxLayout, QListWidget,QVBoxLayout, QStackedWidget
+from PyQt5.QtCore import QTimer, Qt
 from mouse_clicker.mouse_clicker_controller import ClickerController
 from key_presser.key_presser_controller import PresserController
 from color_tool.color_tool_controller import ColorController
 from script_runner.script_controller import ScriptController
+from profile_manager.profiles_controller import ProfilesController
 
-def apply_stylesheet(app: QApplication, path: str) -> None:
-    with open(path, "r") as f:
-        style = f.read()
-        app.setStyleSheet(style)
+MODULES = {"Mouse Clicker": ClickerController, 
+           "Key Presser": PresserController, 
+           "Color Tool": ColorController, 
+           "Script Runner": ScriptController, 
+           "Profiles": ProfilesController}
 
 class CentralManagerGUI(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        # Set up the main layout
         self.setWindowTitle("Automation Manager")
         self.setGeometry(100, 100, 800, 600)
 
-        # Create the central widget
+        self.controllers = []
+
+        # Stacked widget to display the different modules
+        self.stacked_widget = QStackedWidget()
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-
-        # Create a horizontal layout to divide the navigation and module display
         main_layout = QHBoxLayout()
+        nav_layout = QVBoxLayout()
 
-        # Navigation menu on the left (QListWidget)
+        # Title for the nav menu
+        self.title_label = QLabel("Clickey")
+        self.title_label.setObjectName("title")
+        self.title_label.setAlignment(Qt.AlignCenter)  # Center the title
+
+        # Nav menu (QListWidget)
         self.nav_menu = QListWidget()
-        self.nav_menu.addItems(["Mouse Clicker", "Key Presser", "Color Tool", "Script Runner"])
-        self.nav_menu.currentRowChanged.connect(self.display_module)  # Connect navigation change to display handler
+        self.nav_menu.addItems(MODULES.keys())
+        self.nav_menu.currentRowChanged.connect(self.display_module)
+        self.nav_menu.setFixedWidth(200) 
+        self.nav_menu.setCurrentRow(0)
 
-        # Stacked widget on the right to display module GUIs
-        self.stacked_widget = QStackedWidget()
-
-        # Add both widgets to the main layout
-        main_layout.addWidget(self.nav_menu)
+        # Add the title and nav menu to the nav layout
+        nav_layout.addWidget(self.title_label)
+        nav_layout.addWidget(self.nav_menu)        
+        main_layout.addLayout(nav_layout)  
         main_layout.addWidget(self.stacked_widget)
 
-        # Set the layout to the central widget
         central_widget.setLayout(main_layout)
 
-        # Initialize a placeholder for the controllers
-        self.controllers = [None] * 4  # This will store controller instances
+    def load_modules(self):
+        for module in MODULES.values():
+            self.controllers.append(module())
+        
+        for controller in self.controllers:
+            #add all controllers to the stacked widget
+            self.stacked_widget.addWidget(controller.gui)
 
-        # Set empty widgets as placeholders in the stacked widget (for now)
-        for _ in range(4):
-            self.stacked_widget.addWidget(QWidget())  # Empty placeholder widget for each module
+            if isinstance(controller, ProfilesController):
+                controller.add_controllers(self.controllers)
 
-        # Schedule display_module(0) to run after 1 second
-        QTimer.singleShot(1000, lambda: self.display_module(0))  # 1000 milliseconds = 1 second
+        self.display_module(0)
 
     def display_module(self, index):
-        """ Lazy load the module when selected """
-        if self.controllers[index] is None:
-            # Initialize the controller only when it is accessed for the first time
-            if index == 0:
-                self.controllers[index] = ClickerController()
-            elif index == 1:
-                self.controllers[index] = PresserController()
-            elif index == 2:
-                self.controllers[index] = ColorController()
-            elif index == 3:
-                self.controllers[index] = ScriptController()
-
-            # Replace the placeholder widget with the actual controller's GUI
-            self.stacked_widget.removeWidget(self.stacked_widget.widget(index))  # Remove placeholder
-            self.stacked_widget.insertWidget(index, self.controllers[index].gui)
-
-        # Display the selected module
         self.stacked_widget.setCurrentIndex(index)
+

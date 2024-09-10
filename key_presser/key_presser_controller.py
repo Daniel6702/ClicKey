@@ -5,5 +5,5 @@ from key_presser.presser_gui import KeyPresserGUI
 
 class PresserController(AutoActionController, QWidget):
     def __init__(self):
-        super().__init__(KeyPresserLogic, KeyPresserGUI, 'settings/key_presser_settings.json')
+        super().__init__(KeyPresserLogic, KeyPresserGUI, 'default_settings/key_presser_settings.json')
         

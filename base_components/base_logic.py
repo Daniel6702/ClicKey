@@ -19,10 +19,6 @@ class BaseAutoActionLogic(QWidget):
             self.settings = json.load(file)
             return self.settings
 
-    def save_json_settings(self, settings, file_path: str = 'settings.json'):
-        with open(file_path, 'w') as file:
-            json.dump(settings, file, indent=4)
-
     def get_interval(self):
         if self.settings.get('random_interval', False):
             min_delay = self.settings.get('min_delay', 0.1)

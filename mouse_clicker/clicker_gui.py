@@ -37,5 +37,13 @@ class ClickerGUI(BaseAutoActionGUI):
 
         self.setLayout(main_layout)
 
+    def update_settings(self, new_settings: dict):
+        super().update_settings(new_settings)
+        if new_settings.get('button', None):
+            self.button_action_widget.button_combo.setCurrentText(new_settings['button'])
+        if new_settings.get('action', None):
+            self.button_action_widget.action_combo.setCurrentText(new_settings['action'])
+        if new_settings.get('position_mode', None):
+            self.position_group.position_combo_widget
     
 

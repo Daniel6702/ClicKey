@@ -99,3 +99,32 @@ QPushButton#stopButton:hover {
 QPushButton#stopButton:pressed {
     background-color: #bd2130;
 }
+
+
+QListWidget {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 5px;
+    outline: 0;
+}
+
+QListWidget::item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+QListWidget::item:selected {
+    background-color: #87CEEB;
+    color: black;             
+    font-weight: bold;         
+}
+
+QListWidget::item:hover {
+    background-color: #add8e6; 
+}
+
+QListWidget::item:selected:focus {
+    outline: none; 
+}

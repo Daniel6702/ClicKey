@@ -18,10 +18,11 @@ class KeyPresserGUI(BaseAutoActionGUI):
         # Group Box for Key and Modifiers
         key_action_group = QGroupBox("Key Action")
         key_action_layout = QVBoxLayout()
+        key_action_group.setLayout(key_action_layout)
 
         self.key_input_widget = KeyInputWidget()
         self.key_input_widget.change_settings.connect(self.changeSettings.emit)
-        key_action_group.setLayout(self.key_input_widget.layout())
+        key_action_layout.addWidget(self.key_input_widget)
 
         self.combo_widget = ComboBoxWidget()
         self.combo_widget.change_settings.connect(self.changeSettings.emit)

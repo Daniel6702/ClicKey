@@ -1,8 +1,13 @@
-from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QTextEdit, QCheckBox, QHBoxLayout, QListWidget, QLabel, QWidget
+from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QTextEdit, QCheckBox, QHBoxLayout, QListWidget, QLabel, QWidget, QInputDialog
 from base_components.base_gui import BaseAutoActionGUI
 from PyQt5.QtCore import Qt, pyqtSignal
 
 class ProfilesGUI(BaseAutoActionGUI):
+    save_profile_signal = pyqtSignal(str)
+    delete_profile_signal = pyqtSignal(str)
+    load_profile_signal = pyqtSignal()
+    apply_profile_signal = pyqtSignal(dict)
+
     def __init__(self):
         super().__init__("Profiles")
         self.profiles = []
@@ -16,13 +21,14 @@ class ProfilesGUI(BaseAutoActionGUI):
         self.title_widget.status_label.setText("")
         main_layout.addWidget(self.title_widget)
 
+
         temp_H = QHBoxLayout()
 
         # Profile buttons
         button_layout = QVBoxLayout()
 
-        self.save_button = QPushButton("Save Profile")
-        self.save_button.clicked.connect(self.save_profile)
+        self.save_button = QPushButton("Save Profile", self)
+        self.save_button.clicked.connect(self.open_name_input_dialog)
         button_layout.addWidget(self.save_button)
 
         self.apply_button = QPushButton("Apply Profile")
@@ -30,7 +36,7 @@ class ProfilesGUI(BaseAutoActionGUI):
         button_layout.addWidget(self.apply_button)
 
         self.load_button = QPushButton("Load Profile")
-        self.load_button.clicked.connect(self.load_profile)
+        self.load_button.clicked.connect(lambda: self.load_profile_signal.emit())
         button_layout.addWidget(self.load_button)
 
         self.delete_button = QPushButton("Delete Profile")
@@ -49,25 +55,34 @@ class ProfilesGUI(BaseAutoActionGUI):
         self.setLayout(main_layout)
 
     def apply(self):
-        pass
+        selected_profile = self.profile_list.currentItem().text()
+        for profile in self.profiles:
+            if profile.get('name') == selected_profile:
+                self.apply_profile_signal.emit(profile)
+                print(f"Applying profile: {selected_profile}")
+                break
 
     def save_profile(self):
         pass
 
-    def load_profile(self):
-        selected_profile = self.profile_list.currentItem().text()
-        print(f"Loading profile: {selected_profile}")
-
     def delete_profile(self):
         selected_profile = self.profile_list.currentItem().text()
+        self.delete_profile_signal.emit(selected_profile)
+        self.profile_list.takeItem(self.profile_list.currentRow())
         print(f"Deleting profile: {selected_profile}")
 
     def profile_selected(self, item):
         profile_name = item.text()
         print(f"Profile selected: {profile_name}")
 
-    def update_gui(self, add_profile: bool = False, profile: dict = {}):
-        if add_profile:
-            self.profiles.append(profile)
-            self.profile_list.addItem(profile.get('name', ''))
-            print(f"Profile added: {profile.get('name', '')}")
+    def add_profile(self, profile: dict):
+        self.profiles.append(profile)
+        self.profile_list.addItem(profile.get('name', ''))
+        print(f"Profile added: {profile.get('name', '')}")
+        
+
+    def open_name_input_dialog(self):
+        name, ok = QInputDialog.getText(self, 'Enter Name', 'Please enter your name:')
+        
+        if ok and name:
+            self.save_profile_signal.emit(name)
