@@ -1,0 +1,144 @@
+QWidget {
+    background-color: #2b2b2b;
+    font-family: Arial, sans-serif;
+}
+
+QGroupBox {
+    border: 1px solid #555555;
+    border-radius: 5px;
+    margin-top: 10px;
+    padding: 10px;
+    font-weight: bold;
+    color: #e0e0e0;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top center;
+    padding: 0 3px;
+    background-color: #444444;
+    border-radius: 5px;
+}
+
+QLabel {
+    font-size: 14px;
+    color: #aaaaaa;
+}
+
+QLabel#title {
+    font-size: 16px;
+    color: #ffffff;
+    font-weight: bold;
+    margin-bottom: 10px;
+    border: 1px solid #555555;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+QComboBox, QSpinBox, QLineEdit {
+    padding: 5px;
+    margin: 5px 0;
+    border: 1px solid #555555;
+    border-radius: 5px;
+    background-color: #3c3c3c;
+    color: #e0e0e0; /* Text color for QComboBox and input fields */
+}
+
+/* QComboBox drop-down list items */
+QComboBox QAbstractItemView {
+    background-color: #444444; /* Darker background for drop-down */
+    color: #e0e0e0; /* Ensure drop-down items are light and readable */
+    border: 1px solid #555555;
+}
+
+/* QCheckBox and QRadioButton styling */
+QCheckBox, QRadioButton {
+    color: #e0e0e0; /* Set text color to be readable in dark theme */
+}
+
+/* Default QPushButton style */
+QPushButton {
+    font-size: 16px;
+    color: #ffffff;
+    background-color: #0062cc;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin: 10px 0;
+}
+
+/* When hovering, darken the button */
+QPushButton:hover {
+    background-color: #0056b3;
+}
+
+/* When pressed, further darken the button */
+QPushButton:pressed {
+    background-color: #004080;
+}
+
+/* Remove focus outline */
+QPushButton:focus {
+    outline: none;
+}
+
+/* Start button styles */
+QPushButton#startButton {
+    background-color: #28a745;
+    color: #ffffff;
+    max-width: 100%;
+}
+
+QPushButton#startButton:hover {
+    border: 1px solid #333333;
+    background-color: #218838;
+}
+
+QPushButton#startButton:checked {
+    background-color: #ffc107;
+    max-width: 100%;
+}
+
+/* Stop button styles */
+QPushButton#stopButton {
+    background-color: #dc3545;
+    color: #ffffff;
+    max-width: 100%;
+}
+
+QPushButton#stopButton:hover {
+    background-color: #c82333;
+}
+
+QPushButton#stopButton:pressed {
+    background-color: #bd2130;
+}
+
+QListWidget {
+    background-color: #383838;
+    border: 1px solid #666666;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 5px;
+    outline: 0;
+    color: #e0e0e0;
+}
+
+QListWidget::item {
+    padding: 10px;
+    border-bottom: 1px solid #555555;
+}
+
+QListWidget::item:selected {
+    background-color: #1e90ff;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+QListWidget::item:hover {
+    background-color: #4682b4;
+}
+
+QListWidget::item:selected:focus {
+    outline: none;
+}

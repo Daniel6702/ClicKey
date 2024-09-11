@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QApplication,QLabel, QMainWindow, QWidget, QHBoxLayo
 from PyQt5.QtCore import QTimer, Qt
 from module_manager.utils import MODULES
 from modules.profile_manager.profiles_controller import ProfilesController
+from modules.hotkey_manager.hotkey_controller import HotkeyController
 
 class CentralManagerGUI(QMainWindow):
     def __init__(self):
@@ -47,7 +48,7 @@ class CentralManagerGUI(QMainWindow):
             #add all controllers to the stacked widget
             self.stacked_widget.addWidget(controller.gui)
 
-            if isinstance(controller, ProfilesController):
+            if isinstance(controller, ProfilesController) or isinstance(controller, HotkeyController):
                 controller.add_controllers(self.controllers)
 
         self.display_module(0)

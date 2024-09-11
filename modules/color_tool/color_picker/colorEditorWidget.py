@@ -22,7 +22,7 @@ class ColorEditorWidget(QWidget):
         self.__hexLineEdit = QLineEdit()
         self.__hexLineEdit.editingFinished.connect(self.__hexColorChanged)
         self.__copyButton = QPushButton()
-        self.__copyButton.setIcon(QIcon('color_tool\color_picker\style\COPY_ICON.png'))
+        self.__copyButton.setIcon(QIcon('modules\color_tool\color_picker\style\COPY_ICON.png'))
         self.__copyButton.setStyleSheet("background-color: transparent")
         self.__copyButton.setFixedSize(25, 25)
         self.__copyButton.clicked.connect(self.__copyHexToClipboard)

@@ -14,24 +14,15 @@ class ProfilesLogic(BaseAutoActionLogic):
         self.controllers = []
         self.settings_files = []
 
-    def get_settings(self) -> list[dict]:
-        return [controller.logic.settings for controller in self.controllers]
+    def get_settings(self) -> dict:
+        settings = {}
+        for controller in self.controllers:
+            controller_type = controller.logic.__class__.__name__
+            settings[controller_type] = controller.get_settings()
+        return settings
         
     def get_default_settings(self) -> dict:
-        settings = []
-        for file in self.settings_files:
-            settings.append(self.load_json_settings(file))
-        return {"name": "Default Profile", "settings": settings}
-    
-    def compare_dict_keys(self, dict1: dict, dict2: dict) -> bool:
-        return set(dict1.keys()) == set(dict2.keys())
-    
-    def update_settings(self, new_settings: dict):
-        for controller in self.controllers:
-            if self.compare_dict_keys(controller.settings, new_settings):
-                controller.update_settings(new_settings)
-                return True
-        return False
+        return {"name": "Default Profile", "settings": self.get_settings()}
     
     def load_profiles(self, path: str = PROFILES_PATH):
         profiles = []
@@ -50,30 +41,22 @@ class ProfilesLogic(BaseAutoActionLogic):
 
     def delete_profile(self, name: str):
         print(f"Deleting profile file: {name}.json")
-        os.remove(f"{PROFILES_PATH}/{name}.json")
-
-    def conver_str_to_dict(self, string: str) -> dict:
-        return json.loads(string)
+        try:
+            os.remove(f"{PROFILES_PATH}/{name}.json")
+        except FileNotFoundError:
+            print("File not found")
 
     def apply_profile(self, profile: dict):
         '''
-        for each controller get its current settings
-        loop through list in profile dict
-        find the one that matches all the keys
-        update the controller settings with the profile settings
+        For each controller in system, retrieve Type (Name of logic class) corresponding to the key in the profile settings.
+        Retrieve settings for that controller from profile dict with the key (type).
+        Update settings for that controller.
         '''
-        print(f"Applying profile: {profile}, TYPE: {type(profile)}")
         for controller in self.controllers:
-            controller_settings = controller.get_settings()
-            for profile_settings in profile.get('settings', []):
-                print(profile_settings)
-                if isinstance(profile_settings, str):
-                    profile_settings = self.conver_str_to_dict(profile_settings)
-                    
-                if self.compare_dict_keys(controller_settings, profile_settings):
-                    controller.update_settings(profile_settings)
-                    break
-        print(f"Applying profile: {profile}")
+            controller_type = controller.logic.__class__.__name__
+            profile_settings = profile.get("settings", {})
+            controller.update_settings(profile_settings.get(controller_type, {}))
+        print(f"Applied profile: {profile}")
     
     def save_profile(self, name: str):
         profile = {"name": name, "settings": self.get_settings()}

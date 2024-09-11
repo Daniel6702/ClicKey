@@ -1,0 +1,215 @@
+/* General widget styling */
+QWidget {
+    background-color: #2f3640;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 14px;
+    color: #dcdde1;
+}
+
+/* Group box styling with shadow and sleek borders */
+QGroupBox {
+    border: 1px solid #3b3b3b;
+    border-radius: 8px;
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #353b48;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top center;
+    padding: 0 10px;
+    background-color: #2f3640;
+    border-radius: 5px;
+    font-size: 16px;
+    color: #f5f6fa;
+}
+
+/* Labels */
+QLabel {
+    font-size: 14px;
+    color: #f5f6fa;
+    padding: 2px;
+}
+
+QLabel#title {
+    font-size: 18px;
+    color: #f5f6fa;
+    font-weight: bold;
+    padding: 8px;
+    background-color: #353b48;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+/* Buttons with modern flat design */
+QPushButton {
+    font-size: 16px;
+    color: #ffffff;
+    background-color: #1abc9c;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 24px;
+    margin: 8px 0;
+    transition: background-color 0.3s, transform 0.1s;
+    letter-spacing: 0.5px;
+}
+
+QPushButton:hover {
+    background-color: #16a085;
+}
+
+QPushButton:pressed {
+    background-color: #148f77;
+    transform: scale(0.98);
+}
+
+QPushButton:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.3);
+}
+
+/* Custom style for Start Button */
+QPushButton#startButton {
+    background-color: #27ae60;
+}
+
+QPushButton#startButton:hover {
+    background-color: #229954;
+}
+
+QPushButton#startButton:pressed {
+    background-color: #1e8449;
+}
+
+/* Custom style for Stop Button */
+QPushButton#stopButton {
+    background-color: #e74c3c;
+}
+
+QPushButton#stopButton:hover {
+    background-color: #c0392b;
+}
+
+QPushButton#stopButton:pressed {
+    background-color: #a93226;
+}
+
+/* ComboBox, SpinBox, LineEdit styling */
+QComboBox, QSpinBox, QLineEdit {
+    background-color: #3b3b3b;
+    color: #f5f6fa;
+    border: 2px solid #2f3640;
+    border-radius: 6px;
+    padding: 8px;
+    margin: 8px 0;
+    min-height: 30px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #353b48;
+    color: #f5f6fa;
+    border: 1px solid #3b3b3b;
+    selection-background-color: #1abc9c;
+    selection-color: #ffffff;
+}
+
+QComboBox:hover, QSpinBox:hover, QLineEdit:hover {
+    border: 1px solid #1abc9c;
+}
+
+QComboBox:focus, QSpinBox:focus, QLineEdit:focus {
+    border: 1px solid #1abc9c;
+    outline: none;
+}
+
+/* List widget modern styling */
+QListWidget {
+    background-color: #353b48;
+    border: 1px solid #3b3b3b;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 8px;
+    color: #f5f6fa;
+    margin: 10px 0;
+}
+
+QListWidget::item {
+    padding: 10px;
+    border-bottom: 1px solid #2f3640;
+}
+
+QListWidget::item:hover {
+    background-color: #40739e;
+    color: #ffffff;
+}
+
+QListWidget::item:selected {
+    background-color: #273c75;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* CheckBox and RadioButton modern flat style */
+QCheckBox, QRadioButton {
+    color: #f5f6fa;
+    padding: 5px;
+}
+
+QCheckBox::indicator, QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    border: 1px solid #bdc3c7;
+    background-color: transparent;
+}
+
+QCheckBox::indicator:hover, QRadioButton::indicator:hover {
+    border: 1px solid #1abc9c;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #1abc9c;
+    border: 1px solid #1abc9c;
+}
+
+QRadioButton::indicator:checked {
+    background-color: #1abc9c;
+    border: 1px solid #1abc9c;
+}
+
+/* Scrollbar customization for a modern look */
+QScrollBar:vertical {
+    border: none;
+    background-color: #2f3640;
+    width: 10px;
+    margin: 15px 0 15px 0;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #1abc9c;
+    min-height: 20px;
+    border-radius: 5px;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    border: none;
+    background-color: #2f3640;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background-color: none;
+}
+
+/* ToolTip styling */
+QToolTip {
+    background-color: #353b48;
+    color: #f5f6fa;
+    border: 1px solid #1abc9c;
+    border-radius: 6px;
+    padding: 5px;
+    font-size: 12px;
+}

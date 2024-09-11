@@ -55,7 +55,7 @@ class ScriptGUI(BaseAutoActionGUI):
         button_layout.addWidget(self.record_button)
 
         self.save_button = QPushButton("Save Script")
-        self.save_button.clicked.connect(lambda: self.save_script(self.script_editor.toPlainText()))
+        self.save_button.clicked.connect(lambda: self.save_script_signal.emit(self.script_editor.toPlainText()))
         button_layout.addWidget(self.save_button)
 
         self.load_button = QPushButton("Load Script")
@@ -87,6 +87,12 @@ class ScriptGUI(BaseAutoActionGUI):
             self.record_button.setText("Start Recording")
             self.stop_recording_signal.emit()
             self.script_editor.setReadOnly(False)
+
+    def toggle_recording_button(self):
+        if self.record_button.text() == "Start Recording":
+            self.toggle_recording(True)
+        else:
+            self.toggle_recording(False)
 
     def update_script(self, script=""):
         print(f"Updating script: {script}")

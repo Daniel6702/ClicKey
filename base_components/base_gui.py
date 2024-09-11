@@ -29,6 +29,10 @@ class BaseAutoActionGUI(QWidget):
         self.start_stop_widget.change_status.emit(False)
         self.title_widget.change_status.emit(False)
 
+    def start(self):
+        self.start_stop_widget.change_status.emit(True)
+        self.title_widget.change_status.emit(True)
+
     def update_settings(self, new_settings: dict):
         if new_settings.get('sound_effect', None):
             self.sound_effect_checkbox.setChecked(new_settings['sound_effect'])
@@ -52,6 +56,6 @@ class BaseAutoActionGUI(QWidget):
             self.interval_widget.interval_stacked_layout.setCurrentIndex(new_settings['random_interval'])
             self.interval_widget.random_delay_checkbox.setChecked(new_settings['random_interval'])
         if new_settings.get('min_delay', None):
-            self.interval_widget.min_delay_input.setValue(new_settings['min_delay'])
+            self.interval_widget.min_delay_input.setValue(int(new_settings['min_delay']))
         if new_settings.get('max_delay', None):
-            self.interval_widget.max_delay_input.setValue(new_settings['max_delay'])
+            self.interval_widget.max_delay_input.setValue(int(new_settings['max_delay']))

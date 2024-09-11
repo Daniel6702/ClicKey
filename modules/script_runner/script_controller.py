@@ -9,5 +9,5 @@ class ScriptController(AutoActionController):
         self.gui.start_recording_signal.connect(self.logic.start_recording)
         self.gui.stop_recording_signal.connect(self.logic.stop_recording)
         self.gui.save_script_signal.connect(self.logic.save_script)
-        self.gui.load_script_signal.connect(self.logic.load_script)
+        self.gui.load_script_signal.connect(self.logic.get_file_dialog)
         

@@ -168,18 +168,39 @@ class ScriptLogic(BaseAutoActionLogic):
             with open(file_name, 'w') as file:
                 json.dump(self.script, file)
 
-    def load_script(self):
+    def read_file(self, file_path: str):
+        try:
+            with open(file_path, 'r') as file:
+                output = file.read()   
+            return output
+        except FileNotFoundError:
+            print("No script file found.")
+            return None
+        
+    def update_gui_with_script_frome_file(self, file_data: str):
+        action = ""
+        action_start = False
+        for char in file_data.replace('"', ""):
+            if char == '{':
+                action_start = True
+            if action_start:
+                action += char
+            if char == '}':
+                action_start = False
+                self.update_script_signal.emit(action)
+                action = ""
+
+    def get_file_dialog(self):
         """
         Load the script from a user-selected file using a file explorer and populate the GUI.
         """
         options = QFileDialog.Options()
         file_name, _ = QFileDialog.getOpenFileName(None, "Load Script", "", "Text Files (*.txt);;All Files (*)", options=options)
-        if file_name:
-            try:
-                with open(file_name, 'r') as file:
-                    self.script = json.load(file)
-                script_text = json.dumps(self.script, indent=4)
-                self.update_script_signal.emit(script_text)
-            except FileNotFoundError:
-                print("No script file found.")
+        self.load_script(file_name)
+
+    def load_script(self, file_path: str):
+        self.script = self.read_file(file_path)
+        self.update_gui_with_script_frome_file(self.script)
+            
+      
 
