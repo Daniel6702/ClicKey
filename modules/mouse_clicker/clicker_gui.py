@@ -1,10 +1,10 @@
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout
-from base_components.base_gui import BaseAutoActionGUI
+from base_components.base_gui import BaseGUI
 from PyQt5.QtCore import Qt
 from modules.mouse_clicker.click_position_widget import ClickPositionWidget
 from modules.mouse_clicker.button_action_widget import ButtonActionWidget
 
-class ClickerGUI(BaseAutoActionGUI):
+class ClickerGUI(BaseGUI):
     def __init__(self):
         super().__init__("Auto Mouse Clicker")
         self.initClickerUI()

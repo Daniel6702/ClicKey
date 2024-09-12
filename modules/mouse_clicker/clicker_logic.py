@@ -2,9 +2,9 @@ import pyautogui
 import random
 import threading
 import time
-from base_components.base_logic import BaseAutoActionLogic
+from base_components.base_logic import BaseLogic
 
-class ClickerLogic(BaseAutoActionLogic):
+class ClickerLogic(BaseLogic):
 
     def run(self):
         time.sleep(2)  # Initial delay

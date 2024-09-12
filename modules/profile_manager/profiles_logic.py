@@ -1,4 +1,4 @@
-from base_components.base_logic import BaseAutoActionLogic
+from base_components.base_logic import BaseLogic
 from PyQt5.QtCore import pyqtSignal
 import json
 import os
@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QFileDialog
 
 PROFILES_PATH = 'modules/profile_manager/profiles'
 
-class ProfilesLogic(BaseAutoActionLogic):
+class ProfilesLogic(BaseLogic):
     add_profile = pyqtSignal(dict, name='addProfile')
 
     def __init__(self):

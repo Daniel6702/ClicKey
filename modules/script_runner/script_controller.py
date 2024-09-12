@@ -1,8 +1,8 @@
-from base_components.controller import AutoActionController
+from base_components.base_controller import BaseController
 from modules.script_runner.script_logic import ScriptLogic
 from modules.script_runner.script_gui import ScriptGUI
 
-class ScriptController(AutoActionController):
+class ScriptController(BaseController):
     def __init__(self):
         super().__init__(ScriptLogic, ScriptGUI, 'default_settings/script_runner_settings.json')
         self.logic.update_script_signal.connect(self.gui.update_script)

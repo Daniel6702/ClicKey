@@ -56,6 +56,15 @@ QCheckBox, QRadioButton {
     color: #e0e0e0; /* Set text color to be readable in dark theme */
 }
 
+/* QTextEdit styling */
+QTextEdit {
+    background-color: #3c3c3c; /* Dark background */
+    color: #e0e0e0; /* Light text color for readability */
+    border: 1px solid #555555;
+    border-radius: 5px;
+    padding: 5px;
+}
+
 /* Default QPushButton style */
 QPushButton {
     font-size: 16px;

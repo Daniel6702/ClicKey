@@ -1,9 +1,9 @@
-from base_components.base_logic import BaseAutoActionLogic
+from base_components.base_logic import BaseLogic
 import pyautogui
 import threading
 import time
 
-class KeyPresserLogic(BaseAutoActionLogic):
+class KeyPresserLogic(BaseLogic):
 
     def run(self):
         time.sleep(2)  # Initial delay before starting

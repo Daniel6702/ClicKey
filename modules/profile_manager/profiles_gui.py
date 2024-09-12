@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QTextEdit, QCheckBox, QHBoxLayout, QListWidget, QLabel, QWidget, QInputDialog
-from base_components.base_gui import BaseAutoActionGUI
+from base_components.base_gui import BaseGUI
 from PyQt5.QtCore import Qt, pyqtSignal
 
-class ProfilesGUI(BaseAutoActionGUI):
+class ProfilesGUI(BaseGUI):
     save_profile_signal = pyqtSignal(str)
     delete_profile_signal = pyqtSignal(str)
     load_profile_signal = pyqtSignal()

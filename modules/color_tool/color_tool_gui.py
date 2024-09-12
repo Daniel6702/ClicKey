@@ -5,11 +5,11 @@ from random import randint
 
 from modules.color_tool.color_picker.colorPickerWidget import ColorPickerWidget
 
-from base_components.base_gui import BaseAutoActionGUI
+from base_components.base_gui import BaseGUI
 
 from modules.color_tool.pixel_color_detector import PixelDetectorWidget
 
-class ColorGUI(BaseAutoActionGUI):
+class ColorGUI(BaseGUI):
     def __init__(self):
         super().__init__("Color Tools")
         self.profiles = []

@@ -1,4 +1,4 @@
-from base_components.base_logic import BaseAutoActionLogic
+from base_components.base_logic import BaseLogic
 
-class ColorLogic(BaseAutoActionLogic):
+class ColorLogic(BaseLogic):
     pass

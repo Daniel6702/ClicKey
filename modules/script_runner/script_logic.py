@@ -4,11 +4,11 @@ import json
 import threading
 import keyboard  # For keyboard actions
 from PyQt5.QtWidgets import QFileDialog
-from base_components.base_logic import BaseAutoActionLogic
+from base_components.base_logic import BaseLogic
 from pynput import mouse, keyboard
 from PyQt5.QtCore import pyqtSignal
 
-class ScriptLogic(BaseAutoActionLogic):
+class ScriptLogic(BaseLogic):
     update_script_signal = pyqtSignal(str)
 
     def __init__(self):

@@ -6,7 +6,7 @@ from base_components.gui_components.start_stop_widget import StartStopWidget
 from base_components.gui_components.interval_widget import IntervalWidget
 from base_components.gui_components.repetition_widget import RepeatActionWidget
 
-class BaseAutoActionGUI(QWidget):
+class BaseGUI(QWidget):
     changeSettings = pyqtSignal(dict, name='changeSettings')
 
     def __init__(self, title: str):

@@ -1,8 +1,8 @@
-from base_components.base_logic import BaseAutoActionLogic
-from base_components.base_gui import BaseAutoActionGUI
+from base_components.base_logic import BaseLogic
+from base_components.base_gui import BaseGUI
 
-class AutoActionController():
-    def __init__(self, logic_class: type[BaseAutoActionLogic], gui_class: type[BaseAutoActionGUI], default_settings_file: str):
+class BaseController():
+    def __init__(self, logic_class: type[BaseLogic], gui_class: type[BaseGUI], default_settings_file: str):
         self.logic = logic_class()
         self.gui = gui_class()
         

@@ -1,4 +1,4 @@
-from base_components.controller import AutoActionController
+from base_components.base_controller import BaseController
 from modules.profile_manager.profiles_logic import ProfilesLogic
 from modules.profile_manager.profiles_gui import ProfilesGUI
 from PyQt5.QtWidgets import QWidget
@@ -9,7 +9,7 @@ DEFAULT_SETTINGS_FILES = ['default_settings/color_tool_settings.json',
                           'default_settings/profiles_settings.json',
                           'default_settings/script_runner_settings.json']
 
-class ProfilesController(AutoActionController, QWidget):
+class ProfilesController(BaseController, QWidget):
     def __init__(self):
         super().__init__(ProfilesLogic, ProfilesGUI, "default_settings/profiles_settings.json")
         self.logic.settings_files = DEFAULT_SETTINGS_FILES
@@ -21,5 +21,5 @@ class ProfilesController(AutoActionController, QWidget):
         self.gui.apply_profile_signal.connect(self.logic.apply_profile)
         self.logic.load_profiles()
 
-    def add_controllers(self, controllers: list[type[AutoActionController]]) -> None:
+    def add_controllers(self, controllers: list[type[BaseController]]) -> None:
         self.logic.controllers = controllers

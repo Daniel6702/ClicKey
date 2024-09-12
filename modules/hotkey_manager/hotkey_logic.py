@@ -1,18 +1,8 @@
-from base_components.base_logic import BaseAutoActionLogic
+from base_components.base_logic import BaseLogic
 import threading
 import keyboard
-'''
-Updating hotkey: {'module': 'ClickerController', 'type': 'start', 'key': 'Ctrl+F1'}
-Updating hotkey: {'module': 'ClickerController', 'type': 'stop', 'key': 'Ctrl+F2'} 
-Updating hotkey: {'module': 'PresserController', 'type': 'start', 'key': 'Ctrl+F3'}
-Updating hotkey: {'module': 'PresserController', 'type': 'stop', 'key': 'Ctrl+F4'} 
-Updating hotkey: {'module': 'ScriptController', 'type': 'start', 'key': 'Ctrl+F5'} 
-Updating hotkey: {'module': 'ScriptController', 'type': 'stop', 'key': 'Ctrl+F6'}
-Updating hotkey: {'module': 'ColorController', 'type': 'lock', 'key': 'Ctrl+F7'}
-Updating hotkey: {'module': 'ScriptController', 'type': 'script', 'key': 'Ctrl+F8'}
-'''
 
-class HotkeyLogic(BaseAutoActionLogic):
+class HotkeyLogic(BaseLogic):
     def __init__(self):
         super().__init__()
         self.hotkeys = {} 
@@ -37,7 +27,6 @@ class HotkeyLogic(BaseAutoActionLogic):
         self.hotkeys[key] = (module, action)
 
         keyboard.add_hotkey(key, self.hotkey_triggered, args=(key,))
-        print(f"Hotkey added: {key} for {module}.{action}")
 
     def hotkey_triggered(self, key):
         """

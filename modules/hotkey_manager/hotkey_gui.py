@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QGroupBox, QPushButton, QFileDialog, QFileDialog
-from base_components.base_gui import BaseAutoActionGUI
+from base_components.base_gui import BaseGUI
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal
 from modules.mouse_clicker.mouse_clicker_controller import ClickerController
@@ -57,11 +57,13 @@ class RunScriptHotkeyWidget(QGroupBox):
     def load_script(self):
         options = QFileDialog.Options()
         file_path, _ = QFileDialog.getOpenFileName(None, "Load Script", "", "Text Files (*.txt);;All Files (*)", options=options)
+        if not file_path:
+            return
         file_name = file_path.split('/')[-1]
         new_script_hotkey = HotKey(file_name, 'Ctrl+F9', ScriptController.__name__, file_path, self.hot_key_changed)
         self.group_box_layout.addWidget(new_script_hotkey)        
 
-class HotkeyGUI(BaseAutoActionGUI):
+class HotkeyGUI(BaseGUI):
     hot_key_changed = pyqtSignal(dict)
 
     def __init__(self):

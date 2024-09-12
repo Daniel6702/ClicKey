@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QTextEdit, QCheckBox, QHBoxLayout
-from base_components.base_gui import BaseAutoActionGUI
+from base_components.base_gui import BaseGUI
 from PyQt5.QtCore import Qt, pyqtSignal
 
 class NoSelectionTextEdit(QTextEdit):
@@ -9,7 +9,7 @@ class NoSelectionTextEdit(QTextEdit):
     def mouseMoveEvent(self, event):
         pass
 
-class ScriptGUI(BaseAutoActionGUI):
+class ScriptGUI(BaseGUI):
     start_recording_signal = pyqtSignal()
     stop_recording_signal = pyqtSignal()
     save_script_signal = pyqtSignal(str)

@@ -1,10 +1,10 @@
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QGroupBox
-from base_components.base_gui import BaseAutoActionGUI
+from base_components.base_gui import BaseGUI
 from PyQt5.QtCore import Qt
 from modules.key_presser.combo_box_widget import ComboBoxWidget
 from modules.key_presser.key_input_widget import KeyInputWidget
 
-class KeyPresserGUI(BaseAutoActionGUI):
+class KeyPresserGUI(BaseGUI):
     def __init__(self):
         super().__init__("Auto Key Presser")
         self.initKeyPresserUI()

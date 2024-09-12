@@ -5,7 +5,7 @@ import platform
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import pyqtSignal
 
-class BaseAutoActionLogic(QWidget):
+class BaseLogic(QWidget):
     stop_signal = pyqtSignal()
     
     def __init__(self):
