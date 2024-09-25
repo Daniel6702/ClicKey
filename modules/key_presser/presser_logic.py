@@ -2,11 +2,12 @@ from base_components.base_logic import BaseLogic
 import pyautogui
 import threading
 import time
+from default_settings.SETTINGS import START_DELAY
 
 class KeyPresserLogic(BaseLogic):
 
     def run(self):
-        time.sleep(2)  # Initial delay before starting
+        time.sleep(START_DELAY)
         presses = 0
         repeat_inf = self.settings.get('repeat_inf', True)
         repeat_times = self.settings.get('repeat_times', 1)

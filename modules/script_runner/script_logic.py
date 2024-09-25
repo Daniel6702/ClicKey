@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QFileDialog
 from base_components.base_logic import BaseLogic
 from pynput import mouse, keyboard
 from PyQt5.QtCore import pyqtSignal
+from default_settings.SETTINGS import START_DELAY
 
 class ScriptLogic(BaseLogic):
     update_script_signal = pyqtSignal(str)
@@ -58,7 +59,7 @@ class ScriptLogic(BaseLogic):
         self.script += str(action) + '\n'
 
     def run(self):
-        time.sleep(2) #Initial delay
+        time.sleep(START_DELAY) #Initial delay
         executions = 0
         repeat_inf = self.settings.get('repeat_inf', True)
         repeat_times = self.settings.get('repeat_times', 1)

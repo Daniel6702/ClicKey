@@ -3,11 +3,12 @@ import random
 import threading
 import time
 from base_components.base_logic import BaseLogic
+from default_settings.SETTINGS import START_DELAY
 
 class ClickerLogic(BaseLogic):
 
     def run(self):
-        time.sleep(2)  # Initial delay
+        time.sleep(START_DELAY)  # Initial delay
         clicks = 0
         position_mode = self.settings.get('position_mode', 'follow_mouse')
         click_inf = self.settings.get('repeat_inf', True)

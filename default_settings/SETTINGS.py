@@ -1,0 +1,4 @@
+START_DELAY = 2
+APP = None
+THEME = "Dark"
+WINDOW = None
